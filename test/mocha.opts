@@ -1,0 +1,4 @@
+--require @babel/register
+--require ./test/test-helper.js
+--ui bdd
+--recursive
