@@ -5,7 +5,7 @@
   "author": "OrbitLens<orbit.lens@gmail.com>",
   "description": "Discover required signers, weights, and build optimal signature schema for Stellar transactions.",
   "license": "MIT",
-  "homepage": "https://github.com/orbitlens/stellar-tx-signers-inspector",
+  "homepage": "https://github.com/stellar-expert/stellar-tx-signers-inspector",
   "scripts": {
     "build": "webpack --mode=production --config ./webpack-config.js",
     "test": "node_modules/.bin/mocha",
@@ -14,12 +14,12 @@
     "postversion": "git push && git push --tags"
   },
   "bugs": {
-    "url": "https://github.com/orbitlens/stellar-tx-signers-inspector/issues",
+    "url": "https://github.com/stellar-expert/stellar-tx-signers-inspector/issues",
     "email": "orbit.lens@gmail.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/orbitlens/stellar-tx-signers-inspector"
+    "url": "https://github.com/stellar-expert/stellar-tx-signers-inspector"
   },
   "main": "./src/index.js",
   "keywords": [
