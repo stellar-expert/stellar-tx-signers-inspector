@@ -1,6 +1,6 @@
 # Stellar Tx signers inspector
  
-[![CircleCI](https://circleci.com/gh/orbitlens/stellar-tx-signers-inspector.svg?style=svg)](https://circleci.com/gh/orbitlens/stellar-tx-signers-inspector)
+[![CircleCI](https://circleci.com/gh/stellar-expert/stellar-tx-signers-inspector.svg?style=svg)](https://circleci.com/gh/stellar-expert/stellar-tx-signers-inspector)
 
 Discover required signers, weights, and build optimal signature schema for 
 [Stellar](https://stellar.org) transactions and accounts.
