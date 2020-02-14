@@ -8,7 +8,7 @@ Discover required signers, weights, and build optimal signature schema for
 ## Usage
 
 ```
-npm install -S stellar-tx-signers-inspector
+npm install -S @stellar-expert/tx-signers-inspector
 ```
 
 ### Analyze transaction signers
@@ -17,7 +17,7 @@ To analyze transaction signature requirements, we need to build signers schema
 first:
 
 ```javascript
-import {inspectTransactionSigners} from 'stellar-tx-signers-inspector'
+import {inspectTransactionSigners} from '@stellar-expert/tx-signers-inspector'
 //build signatures schema
 const schema = await inspectTransactionSigners(tx)
 ```
@@ -91,7 +91,7 @@ schema.checkAuthExtra(['GA7...K0M', 'GCF...DLP', 'GA0...MMR'])
 Accounts signing requirements can be analyzed similar to transactions.
 
 ```javascript
-import {inspectAccountSigners} from 'stellar-tx-signers-inspector'
+import {inspectAccountSigners} from '@stellar-expert/tx-signers-inspector'
 //build signatures schema for an account
 const schema = await inspectAccountSigners('GDF...ER2')
 ```
