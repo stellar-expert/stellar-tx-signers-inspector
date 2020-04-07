@@ -12,7 +12,8 @@ const settings = {
         path: path.join(__dirname, './lib'),
         filename: '[name].js',
         library: 'stellarTxSignersInspector',
-        libraryTarget: 'umd'
+        libraryTarget: 'umd',
+        globalObject: 'this'
     },
     module: {
         rules: [

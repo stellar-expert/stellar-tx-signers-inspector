@@ -1,3 +1,28 @@
+0.6.2 / 2020-03-07
+==================
+
+* Change `globalObject` in webpack-config to make UMD build available on both browsers and Node.js.
+
+0.6.1 / 2020-02-25
+==================
+
+* Update webpack-config.js to generate map files.
+
+0.6.0 / 2020-02-25
+==================
+
+* Update main entry & versioning script.
+
+0.5.3 / 2020-02-14
+==================
+
+* Update package.json and readme to use scope in the package name.
+
+0.5.2 / 2020-02-13
+==================
+
+* NPM package versioning setup.
+
 0.5.2 / 2020-02-13
 ==================
 
