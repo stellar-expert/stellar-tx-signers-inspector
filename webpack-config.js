@@ -24,6 +24,9 @@ const settings = {
             }
         ]
     },
+    externals: {
+        'stellar-sdk': 'stellar-sdk'
+    },
     plugins: [
         new webpack.LoaderOptionsPlugin({
             minimize: true,

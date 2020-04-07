@@ -1,3 +1,8 @@
+0.6.3 / 2020-03-07
+==================
+
+* Externalize StellarSdk dependency from the NPM webpack build.
+
 0.6.2 / 2020-03-07
 ==================
 
