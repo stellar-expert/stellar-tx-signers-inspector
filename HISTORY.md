@@ -1,3 +1,8 @@
+1.0.0 / 2020-05-29
+==================
+
+* StellarSdk dependency updated to the latest version.
+
 0.6.3 / 2020-03-07
 ==================
 
