@@ -1,4 +1,4 @@
-import {Asset, Operation, TransactionBuilder, Networks} from 'stellar-sdk'
+import {Asset, Operation, TransactionBuilder, Networks, Keypair} from 'stellar-sdk'
 import {HorizonAxiosClient} from 'stellar-sdk'
 
 class FakeHorizon {
@@ -40,15 +40,15 @@ class FakeHorizon {
     }
 }
 
-const fakeHorizon = new FakeHorizon()
+export const fakeHorizon = new FakeHorizon()
 
 /**
  * Build test transaction.
- * @param {FakeAccountInfo} source - Soruce account info.
+ * @param {FakeAccountInfo} source - Source account info.
  * @param {Array<Operation>} operations - Operations to add.
  * @returns {Transaction}
  */
-function buildTransaction(source, operations) {
+export function buildTransaction(source, operations) {
     const builder = new TransactionBuilder(source, {fee: 10000, networkPassphrase: Networks.TESTNET})
     for (const op of operations) {
         builder.addOperation(op)
@@ -56,4 +56,13 @@ function buildTransaction(source, operations) {
     return builder.setTimeout(300).build()
 }
 
-export {fakeHorizon, buildTransaction}
+/**
+ * Build fee bump transaction.
+ * @param {Transaction} innerTx - Inner transaction to wrap.
+ * @param {FakeAccountInfo} source - Source account info.
+ * @param {String} baseFee - Base fee fro the transaction.
+ * @returns {FeeBumpTransaction}
+ */
+export function buildFeeBumpTransaction(innerTx, source, baseFee = '10000') {
+    return TransactionBuilder.buildFeeBumpTransaction(Keypair.fromPublicKey(source.id), baseFee, innerTx, Networks.TESTNET)
+}

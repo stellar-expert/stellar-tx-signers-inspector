@@ -50,20 +50,19 @@ class TransactionSignatureSchema extends SignatureSchema {
         //check signer uniqueness
         const unneededSigners = [],
             uniqueSigners = []
-        for (const proposedSigner of signers){
+        for (const proposedSigner of signers) {
             if (uniqueSigners.includes(proposedSigner)) {
                 unneededSigners.push(proposedSigner)
             } else {
                 uniqueSigners.push(proposedSigner)
             }
         }
-        signers = uniqueSigners
         //detect optimal signature schema giving the proposes signers
-        const optimalSigners = this.discoverSigners(signers)
+        const optimalSigners = this.discoverSigners(uniqueSigners)
         //verify that the proposed schema satisfies the requirements
         if (!optimalSigners.length) return unneededSigners
         //the transaction will fail if at least one extra signature is found
-        for (const proposedSigner of signers) {
+        for (const proposedSigner of uniqueSigners) {
             if (!optimalSigners.includes(proposedSigner)) {
                 unneededSigners.push(proposedSigner)
             }

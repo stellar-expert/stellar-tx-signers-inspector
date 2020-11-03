@@ -40,11 +40,9 @@ const settings = {
     optimization: {
         minimizer: [new TerserPlugin({
             parallel: true,
-            sourceMap: true,
             extractComments: false,
             terserOptions: {
                 warnings: true
-                //toplevel: true
             }
         })]
     }
