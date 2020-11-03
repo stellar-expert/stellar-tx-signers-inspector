@@ -1,6 +1,6 @@
 import {inspectTransactionSigners} from '../src/index'
 import {Operation, Asset} from 'stellar-sdk'
-import {fakeHorizon, buildTransaction} from './account-signer-test-utils'
+import {fakeHorizon, buildTransaction, buildFeeBumpTransaction} from './account-signer-test-utils'
 import FakeAccountInfo from './fake-account-info'
 
 describe('inspectTransactionSigners() tests', function () {
@@ -220,5 +220,27 @@ describe('inspectTransactionSigners() tests', function () {
         schema = await inspectTransactionSigners(tx, {accountsInfo: [FakeAccountInfo.nonExisting(distributor)]})
         expect(schema.warnings.length).to.be.equal(0)
         expect(schema.discoverSigners()).to.have.members([issuer.id, distributor.id])
+    })
+
+    it('discovers signers for a fee bump transaction', async function () {
+        const src = FakeAccountInfo.basic(2),
+            cosigner = FakeAccountInfo.empty,
+            feeSource = FakeAccountInfo.basic(2)
+                .withSigner(cosigner, 1)
+
+        const tx = buildTransaction(src, [
+            Operation.payment({destination: feeSource.id, amount: '1', asset: Asset.native()})
+        ])
+
+        const bump = buildFeeBumpTransaction(tx, feeSource)
+
+        const schema = await inspectTransactionSigners(bump)
+        expect(schema.warnings.length).to.equal(0)
+        expect(schema.getAllPotentialSigners()).to.have.members([feeSource.id, cosigner.id])
+        expect(schema.discoverSigners()).to.have.members([feeSource.id])
+        expect(schema.checkFeasibility([feeSource.id])).to.be.true
+        expect(schema.checkFeasibility([cosigner.id])).to.be.true
+        expect(schema.checkAuthExtra([feeSource.id])).to.eql([])
+        expect(schema.checkAuthExtra([feeSource.id, cosigner.id])).to.eql([cosigner.id])
     })
 })

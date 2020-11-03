@@ -24,21 +24,26 @@ const defaultHorizon = 'https://horizon.stellar.org'
 
 /**
  * Discover required signers for a given transaction.
- * @param {Transaction} tx - Transaction to assess.
+ * @param {Transaction|FeeBumpTransaction} tx - Transaction to assess.
  * @param {InspectionOptions} [options] - Inspection options.
  * @return {Promise<TransactionSignatureSchema>}
  */
-async function inspectTransactionSigners(tx, options = null) {
-    //check the input params using duck typing
-    if (!tx.source || !(tx.operations instanceof Array))
-        throw new Error('Invalid parameter "tx". Expected a Stellar transaction.')
+export async function inspectTransactionSigners(tx, options = null) {
     //initialize inspector
     const inspector = new SignersInspector()
-    //add tx source account by default
-    inspector.addSource(tx.source, 'low')
-    //process source account for each operation
-    for (let operation of tx.operations) {
-        inspector.addSource(operation.source || tx.source, inspector.detectOperationThreshold(operation))
+    //check input params using duck typing
+    if (tx.feeSource && tx.innerTransaction) { //fee source tx
+        //add tx source account by default
+        inspector.addSource(tx.feeSource, 'low')
+    } else { //regular tx
+        if (!tx.source || !(tx.operations instanceof Array))
+            throw new Error('Invalid parameter "tx". Expected a Stellar transaction.')
+        //add tx source account by default
+        inspector.addSource(tx.source, 'low')
+        //process source account for each operation
+        for (let operation of tx.operations) {
+            inspector.addSource(operation.source || tx.source, inspector.detectOperationThreshold(operation))
+        }
     }
     const {accountsInfo, horizon = defaultHorizon} = options || {}
     //load all source accounts
@@ -53,7 +58,7 @@ async function inspectTransactionSigners(tx, options = null) {
  * @param {InspectionOptions} [options] - Inspection options.
  * @return {Promise<AccountSignatureSchema>}
  */
-async function inspectAccountSigners(sourceAccount, options = null) {
+export async function inspectAccountSigners(sourceAccount, options = null) {
     if (!sourceAccount)
         throw new Error('Invalid parameter "sourceAccount". Expected a valid Stellar public key.')
 
@@ -68,5 +73,3 @@ async function inspectAccountSigners(sourceAccount, options = null) {
     //build and return composed signatures schema
     return inspector.buildSignatureSchema('account')
 }
-
-export {inspectTransactionSigners, inspectAccountSigners}
