@@ -35,7 +35,7 @@ schema.getAllPotentialSigners()
 #### Discovering optimal transaction signers
 
 Method `discoverSigners()` returns the list of the optimal signers to use.
-It automatically detects weights and performs advanced lookup to find the best 
+It automatically detects weights and performs an advanced lookup to find the best 
 signing schema in terms of the minimum signers count. This is especially useful
 for complex transactions containing multiple operations with different sources.
 
@@ -56,7 +56,7 @@ schema.discoverSigners(['GCF...DLP', 'GA0...MMR', 'GBP...D71'])
 //returns something like ['GCF...DLP', 'GA0...MMR']
 ```
 
-#### Checking the transaction signing feasibility 
+#### Checking signing feasibility for a transaction 
 
 Method `checkFeasibility(availableSigners)` verifies that the transaction can be
 fully signed using a given set of available signers. It returns `true` if
@@ -127,7 +127,7 @@ schema.discoverSigners('med', ['GCF...DLP', 'GA0...MMR', 'GBP...D71'])
 //returns something like ['GCF...DLP', 'GA0...MMR']
 ```
 
-#### Checking the account signing feasibility for a given threshold
+#### Checking account signing feasibility for a given threshold
 
 Method `checkFeasibility(weight, availableSigners)` verifies that the 
 transaction with a given threshold can be fully signed using a given set of
