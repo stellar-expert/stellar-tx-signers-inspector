@@ -1,3 +1,21 @@
+1.3.0 / 2022-03-13
+==================
+
+* Fix thresholds levels for new operations.
+* Fix account sequence increment logic.
+* Move StellarSDK to peerDependencies.
+
+1.2.0 / 2021-05-11
+==================
+
+* Bump StellarSDK to the latest version.
+
+1.1.0 / 2020-11-03
+==================
+
+* Add FeeBumpTransactions support.
+* Update dependencies.
+
 1.0.0 / 2020-05-29
 ==================
 

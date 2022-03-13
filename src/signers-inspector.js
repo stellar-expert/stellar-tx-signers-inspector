@@ -45,6 +45,8 @@ class SignersInspector {
         switch (operation.type) {
             case 'allowTrust':
             case 'bumpSequence':
+            case 'setTrustLineFlags':
+            case 'claimClaimableBalance':
                 return 'low'
             case 'accountMerge':
                 return 'high'

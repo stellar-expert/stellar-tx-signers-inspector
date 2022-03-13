@@ -1,4 +1,5 @@
 import {Keypair} from 'stellar-sdk'
+import Bignumber from 'bignumber.js'
 
 class AccountInfo {
     constructor(keypair, sequence) {
@@ -26,7 +27,7 @@ class AccountInfo {
     }
 
     sequenceNumber() {
-        return this.sequence.toString()
+        return this.sequence
     }
 
     accountId() {
@@ -34,7 +35,7 @@ class AccountInfo {
     }
 
     incrementSequenceNumber() {
-        this.sequence = (parseInt(this.sequence) + 1).toString()
+        this.sequence = new Bignumber(this.sequence).add(new Bignumber(1)).toString()
     }
 }
 
