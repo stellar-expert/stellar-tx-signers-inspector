@@ -8,6 +8,7 @@
   "scripts": {
     "build": "webpack --mode=production --config ./webpack-config.js",
     "test": "node_modules/.bin/mocha",
+    "test-windows": "mocha",
     "preversion": "npm test",
     "version": "npm run build",
     "postversion": "git push && git push --tags"
@@ -29,7 +30,7 @@
     "signer"
   ],
   "peerDependencies": {
-    "stellar-sdk": ">=8.2.0"
+    "stellar-sdk": "^10.1.2"
   },
   "devDependencies": {
     "@babel/core": "^7.12.3",

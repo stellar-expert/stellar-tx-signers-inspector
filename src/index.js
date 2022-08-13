@@ -1,4 +1,5 @@
 import SignersInspector from './signers-inspector'
+import { SignerKey, StrKey } from 'stellar-sdk'
 
 const defaultHorizon = 'https://horizon.stellar.org'
 
@@ -45,7 +46,10 @@ export async function inspectTransactionSigners(tx, options = null) {
             inspector.addSource(operation.source || tx.source, inspector.detectOperationThreshold(operation))
         }
     }
-    const {accountsInfo, horizon = defaultHorizon} = options || {}
+    if (tx.extraSigners && tx.extraSigners.constructor === Array && tx.extraSigners.length > 0) {
+        inspector.addExtraSigners(tx.extraSigners.map(signer => SignerKey.encodeSignerKey(signer)))
+    }
+    const { accountsInfo, horizon = defaultHorizon } = options || {}
     //load all source accounts
     await inspector.loadAccounts(horizon, accountsInfo)
     //build and return composed signatures schema
@@ -67,7 +71,7 @@ export async function inspectAccountSigners(sourceAccount, options = null) {
     for (let threshold of ['low', 'med', 'high']) {
         inspector.addSource(sourceAccount, threshold)
     }
-    const {accountsInfo, horizon = defaultHorizon} = options || {}
+    const { accountsInfo, horizon = defaultHorizon } = options || {}
     //load all source accounts
     await inspector.loadAccounts(horizon, accountsInfo)
     //build and return composed signatures schema

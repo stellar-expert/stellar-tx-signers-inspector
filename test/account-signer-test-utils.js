@@ -1,5 +1,5 @@
-import {Asset, Operation, TransactionBuilder, Networks, Keypair} from 'stellar-sdk'
-import {HorizonAxiosClient} from 'stellar-sdk'
+import { Asset, Operation, TransactionBuilder, Transaction, Networks, Keypair } from 'stellar-sdk'
+import { HorizonAxiosClient } from 'stellar-sdk'
 
 class FakeHorizon {
     constructor(props) {
@@ -30,8 +30,8 @@ class FakeHorizon {
             .callsFake(url => {
                 const [_, id] = /accounts\/(\w+)/.exec(url),
                     account = this.accounts[id]
-                if (account) return Promise.resolve({data: account})
-                return Promise.reject({response: {status: 404, statusText: 'Not found', data: {status: 404}}})
+                if (account) return Promise.resolve({ data: account })
+                return Promise.reject({ response: { status: 404, statusText: 'Not found', data: { status: 404 } } })
             })
     }
 
@@ -46,12 +46,16 @@ export const fakeHorizon = new FakeHorizon()
  * Build test transaction.
  * @param {FakeAccountInfo} source - Source account info.
  * @param {Array<Operation>} operations - Operations to add.
+ * @param {Array<String>} extraSigners - Extra signers to add.
  * @returns {Transaction}
  */
-export function buildTransaction(source, operations) {
-    const builder = new TransactionBuilder(source, {fee: 10000, networkPassphrase: Networks.TESTNET})
+export function buildTransaction(source, operations, extraSigners) {
+    const builder = new TransactionBuilder(source, { fee: 10000, networkPassphrase: Networks.TESTNET })
     for (const op of operations) {
         builder.addOperation(op)
+    }
+    if (extraSigners && extraSigners.constructor === Array && extraSigners.length > 0) {
+        builder.setExtraSigners(extraSigners)
     }
     return builder.setTimeout(300).build()
 }

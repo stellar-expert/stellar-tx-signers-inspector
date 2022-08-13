@@ -1,8 +1,9 @@
-import {Server, StrKey} from 'stellar-sdk'
+import { Server, StrKey } from 'stellar-sdk'
 import AccountThresholdsDescriptor from './account-thresholds-descriptor'
 import AccountSignatureSchema from './signature-schemas/account-signature-schema'
 import TransactionSignatureSchema from './signature-schemas/transaction-signature-schema'
-import AccountSignatureRequirements from './account-signature-requirements'
+import AccountSignatureRequirements from './signature-schemas/requirements/account-signature-requirements'
+import ExtraSignatureRequirments from './signature-schemas/requirements/extra-signature-requirments'
 
 const allThresholdLevels = ['low', 'med', 'high']
 
@@ -17,6 +18,12 @@ class SignersInspector {
      * @type {Object}
      */
     sources
+
+
+    /**
+     * @type {Array<string>}
+     */
+    extraSigners
 
     /**
      * @type {Array<string>}
@@ -79,6 +86,14 @@ class SignersInspector {
     }
 
     /**
+     * Set extra signers for a given source account.
+     * @param {Array<string>} extraSigners - Extra signers.
+     */
+    addExtraSigners(extraSigners) {
+        this.extraSigners = extraSigners
+    }
+
+    /**
      * Load account details for a group of source accounts.
      * @param horizonUrl
      * @param {Array<AccountInfo>} predefinedAccountsInfo
@@ -138,19 +153,19 @@ class SignersInspector {
         const req = []
 
         for (let source of Object.values(this.sources)) {
-            const {id, thresholds: requiredThresholds} = source,
+            const { id, thresholds: requiredThresholds } = source,
                 accountInfo = this.accountsInfo[id],
-                {thresholds = {}, signers = [{key: id, weight: 1}]} = accountInfo
+                { thresholds = {}, signers = [{ key: id, weight: 1 }] } = accountInfo
             //discover minimum sufficient threshold
             const minThreshold = this.discoverRequiredThreshold(requiredThresholds, thresholds)
             //discover potential signers
             const signatureRequirements = new AccountSignatureRequirements(id, minThreshold)
             //set account operation thresholds
-            const {low_threshold: low, med_threshold: med, high_threshold: high} = accountInfo.thresholds
-            signatureRequirements.setThresholds({low, med, high})
+            const { low_threshold: low, med_threshold: med, high_threshold: high } = accountInfo.thresholds
+            signatureRequirements.setThresholds({ low, med, high })
             //detect min required threshold
-            for (let {key, weight} of signers) {
-                const signer = {key, weight}
+            for (let { key, weight } of signers) {
+                const signer = { key, weight }
                 if (key === id) {
                     signer.isMaster = true
                 }
@@ -158,12 +173,17 @@ class SignersInspector {
             }
             //handle accounts that don't exist yet
             if (!signers.length) {
-                signatureRequirements.addSigner({key: id, weight: 1})
+                signatureRequirements.addSigner({ key: id, weight: 1 })
             }
             //reorder by weight to simplify optimal schema calculation
             signatureRequirements.sortSigners()
             //add to schema
             req.push(signatureRequirements)
+        }
+
+        if (this.extraSigners && this.extraSigners.constructor === Array && this.extraSigners.length > 0) {
+            for (let extraSigner of this.extraSigners)
+                req.push(new ExtraSignatureRequirments(extraSigner))
         }
 
         let schemaConstructor

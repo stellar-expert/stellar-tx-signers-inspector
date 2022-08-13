@@ -1,7 +1,8 @@
-import {inspectTransactionSigners} from '../src/index'
-import {Operation, Asset} from 'stellar-sdk'
-import {fakeHorizon, buildTransaction, buildFeeBumpTransaction} from './account-signer-test-utils'
+import { inspectTransactionSigners } from '../src/index'
+import { Operation, Asset, StrKey, Keypair, SignerKey, xdr } from 'stellar-sdk'
+import { fakeHorizon, buildTransaction, buildFeeBumpTransaction } from './account-signer-test-utils'
 import FakeAccountInfo from './fake-account-info'
+import SignatureRequirementsTypes from '../src/signature-schemas/requirements/signature-requirements-types'
 
 describe('inspectTransactionSigners() tests', function () {
     before(() => {
@@ -17,7 +18,7 @@ describe('inspectTransactionSigners() tests', function () {
             dest = FakeAccountInfo.empty
 
         const tx = buildTransaction(src, [
-            Operation.payment({destination: dest.id, amount: '1', asset: Asset.native()})
+            Operation.payment({ destination: dest.id, amount: '1', asset: Asset.native() })
         ])
 
         const schema = await inspectTransactionSigners(tx)
@@ -34,12 +35,12 @@ describe('inspectTransactionSigners() tests', function () {
 
         const asset = new Asset('TTT', issuer.id),
             tx = buildTransaction(issuer, [
-                Operation.createAccount({destination: distributor.id, startingBalance: '1.6'}),
-                Operation.changeTrust({source: distributor.id, asset}),
-                Operation.payment({destination: distributor.id, amount: '1', asset})
+                Operation.createAccount({ destination: distributor.id, startingBalance: '1.6' }),
+                Operation.changeTrust({ source: distributor.id, asset }),
+                Operation.payment({ destination: distributor.id, amount: '1', asset })
             ])
 
-        const schema = await inspectTransactionSigners(tx, {accountsInfo: [issuer, distributor]})
+        const schema = await inspectTransactionSigners(tx, { accountsInfo: [issuer, distributor] })
         expect(schema.warnings.length).to.equal(0)
         expect(schema.discoverSigners()).to.have.members([issuer.id, distributor.id])
         expect(schema.discoverSigners([issuer.id, distributor.id])).to.have.members([issuer.id, distributor.id])
@@ -68,8 +69,8 @@ describe('inspectTransactionSigners() tests', function () {
 
         const asset = new Asset('TTT', issuer.id),
             tx = buildTransaction(issuer, [
-                Operation.changeTrust({source: distributor.id, asset}),
-                Operation.payment({destination: distributor.id, amount: '1', asset})
+                Operation.changeTrust({ source: distributor.id, asset }),
+                Operation.payment({ destination: distributor.id, amount: '1', asset })
             ])
 
         const potentialSigners = [issuer.id, distributor.id, issuerCosigner1.id, issuerCosigner2.id, sharedCosigner.id],
@@ -100,7 +101,8 @@ describe('inspectTransactionSigners() tests', function () {
                         high: 4,
                         low: 4,
                         med: 4
-                    }
+                    },
+                    type: SignatureRequirementsTypes.ACCOUNT_SIGNATURE
                 },
                 {
                     id: distributor.id,
@@ -120,7 +122,8 @@ describe('inspectTransactionSigners() tests', function () {
                         high: 1,
                         low: 1,
                         med: 1
-                    }
+                    },
+                    type: SignatureRequirementsTypes.ACCOUNT_SIGNATURE
                 }]
 
         const schema = await inspectTransactionSigners(tx)
@@ -162,7 +165,7 @@ describe('inspectTransactionSigners() tests', function () {
                 .withThresholds(4, 4, 4)
 
         const tx = buildTransaction(multisigAccount, [
-            Operation.payment({destination: cosigner.id, amount: '1', asset: Asset.native()})
+            Operation.payment({ destination: cosigner.id, amount: '1', asset: Asset.native() })
         ])
 
         const schema = await inspectTransactionSigners(tx)
@@ -186,14 +189,14 @@ describe('inspectTransactionSigners() tests', function () {
             dest = FakeAccountInfo.empty
 
         const tx = buildTransaction(FakeAccountInfo.nonExisting(src), [
-            Operation.payment({destination: dest.id, amount: '1', asset: Asset.native()}),
-            Operation.payment({source: src2.id, destination: dest.id, amount: '1', asset: Asset.native()})
+            Operation.payment({ destination: dest.id, amount: '1', asset: Asset.native() }),
+            Operation.payment({ source: src2.id, destination: dest.id, amount: '1', asset: Asset.native() })
         ])
 
-        const shcema = await inspectTransactionSigners(tx, {accountsInfo: [src, dest]})
-        expect(shcema.warnings.map(({code, data}) => ({code, data}))).to.eql([
-            {code: 'no_source', data: src.id},
-            {code: 'no_source', data: src2.id}
+        const shcema = await inspectTransactionSigners(tx, { accountsInfo: [src, dest] })
+        expect(shcema.warnings.map(({ code, data }) => ({ code, data }))).to.eql([
+            { code: 'no_source', data: src.id },
+            { code: 'no_source', data: src2.id }
         ])
         expect(shcema.discoverSigners()).to.have.members([src.id, src2.id])
         expect(shcema.getAllPotentialSigners()).to.have.members([src.id, src2.id])
@@ -206,9 +209,9 @@ describe('inspectTransactionSigners() tests', function () {
 
         const asset = new Asset('TTT', issuer.id),
             tx = buildTransaction(issuer, [
-                Operation.createAccount({destination: distributor.id, startingBalance: '1.6'}),
-                Operation.changeTrust({source: distributor.id, asset}),
-                Operation.payment({destination: distributor.id, amount: '1', asset})
+                Operation.createAccount({ destination: distributor.id, startingBalance: '1.6' }),
+                Operation.changeTrust({ source: distributor.id, asset }),
+                Operation.payment({ destination: distributor.id, amount: '1', asset })
             ])
 
         //skip accountsInfo entirely
@@ -217,7 +220,7 @@ describe('inspectTransactionSigners() tests', function () {
         expect(schema.discoverSigners()).to.have.members([issuer.id, distributor.id])
 
         //partial accountsInfo
-        schema = await inspectTransactionSigners(tx, {accountsInfo: [FakeAccountInfo.nonExisting(distributor)]})
+        schema = await inspectTransactionSigners(tx, { accountsInfo: [FakeAccountInfo.nonExisting(distributor)] })
         expect(schema.warnings.length).to.be.equal(0)
         expect(schema.discoverSigners()).to.have.members([issuer.id, distributor.id])
     })
@@ -229,7 +232,7 @@ describe('inspectTransactionSigners() tests', function () {
                 .withSigner(cosigner, 1)
 
         const tx = buildTransaction(src, [
-            Operation.payment({destination: feeSource.id, amount: '1', asset: Asset.native()})
+            Operation.payment({ destination: feeSource.id, amount: '1', asset: Asset.native() })
         ])
 
         const bump = buildFeeBumpTransaction(tx, feeSource)
@@ -242,5 +245,21 @@ describe('inspectTransactionSigners() tests', function () {
         expect(schema.checkFeasibility([cosigner.id])).to.be.true
         expect(schema.checkAuthExtra([feeSource.id])).to.eql([])
         expect(schema.checkAuthExtra([feeSource.id, cosigner.id])).to.eql([cosigner.id])
+    })
+
+    it('discover signers for tx with extra signers', async function () {
+        const src = FakeAccountInfo.basic(2),
+            extraSigner = Keypair.random(),
+            extraSignerAddress = extraSigner.publicKey()
+        const tx = buildTransaction(src, [
+            Operation.payment({ destination: Keypair.random().publicKey(), amount: '1', asset: Asset.native() })
+        ], [extraSignerAddress])
+
+        const schema = await inspectTransactionSigners(tx)
+        expect(schema.warnings.length).to.equal(0)
+        expect(schema.getAllPotentialSigners()).to.have.members([src.id, extraSignerAddress])
+        expect(schema.discoverSigners()).to.have.members([src.id, extraSignerAddress])
+        expect(schema.checkFeasibility([src.id])).to.be.false
+        expect(schema.checkFeasibility([src.id, extraSignerAddress])).to.be.true
     })
 })
