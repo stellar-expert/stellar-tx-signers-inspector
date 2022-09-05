@@ -30,7 +30,7 @@
     "signer"
   ],
   "peerDependencies": {
-    "stellar-sdk": "^10.1.2"
+    "stellar-sdk": ">=10.1.2"
   },
   "devDependencies": {
     "@babel/core": "^7.12.3",

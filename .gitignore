@@ -37,3 +37,4 @@ jspm_packages/
 *Thumbs.db
 
 lib/
+/package-lock.json
