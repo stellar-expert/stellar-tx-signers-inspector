@@ -1,4 +1,4 @@
-import { Server, StrKey } from 'stellar-sdk'
+import {Server, StrKey} from 'stellar-sdk'
 import AccountThresholdsDescriptor from './account-thresholds-descriptor'
 import AccountSignatureSchema from './signature-schemas/account-signature-schema'
 import TransactionSignatureSchema from './signature-schemas/transaction-signature-schema'
@@ -37,7 +37,7 @@ class SignersInspector {
 
     discoverRequiredThreshold(requiredThresholds, actualAccountThresholds) {
         let minThreshold = 0
-        for (let key of allThresholdLevels) {
+        for (const key of allThresholdLevels) {
             if (requiredThresholds[key]) {
                 const requiredThreshold = actualAccountThresholds[`${key}_threshold`]
                 if (requiredThreshold > minThreshold) {
@@ -58,9 +58,11 @@ class SignersInspector {
             case 'accountMerge':
                 return 'high'
             case 'setOptions':
-                const highKeys = ['masterWeight', 'lowThreshold', 'medThreshold', 'highThreshold', 'signer']
-                for (let key of highKeys) {
-                    if (operation[key]) return 'high'
+                {
+                    const highKeys = ['masterWeight', 'lowThreshold', 'medThreshold', 'highThreshold', 'signer']
+                    for (const key of highKeys) {
+                        if (operation[key]) return 'high'
+                    }
                 }
                 break
         }
@@ -100,8 +102,8 @@ class SignersInspector {
      * @return {Promise}
      */
     async loadAccounts(horizonUrl, predefinedAccountsInfo = []) {
-        const horizon = new Server(horizonUrl),
-            res = {}
+        const horizon = new Server(horizonUrl)
+        const res = {}
         for (const source of Object.keys(this.sources)) {
             const existing = predefinedAccountsInfo.find(ai => ai.id === source)
             if (existing && existing.thresholds && existing.signers) {
@@ -152,20 +154,20 @@ class SignersInspector {
     buildSignatureSchema(type) {
         const req = []
 
-        for (let source of Object.values(this.sources)) {
-            const { id, thresholds: requiredThresholds } = source,
-                accountInfo = this.accountsInfo[id],
-                { thresholds = {}, signers = [{ key: id, weight: 1 }] } = accountInfo
+        for (const source of Object.values(this.sources)) {
+            const {id, thresholds: requiredThresholds} = source
+            const accountInfo = this.accountsInfo[id]
+            const {thresholds = {}, signers = [{key: id, weight: 1}]} = accountInfo
             //discover minimum sufficient threshold
             const minThreshold = this.discoverRequiredThreshold(requiredThresholds, thresholds)
             //discover potential signers
             const signatureRequirements = new AccountSignatureRequirements(id, minThreshold)
             //set account operation thresholds
-            const { low_threshold: low, med_threshold: med, high_threshold: high } = accountInfo.thresholds
-            signatureRequirements.setThresholds({ low, med, high })
+            const {low_threshold: low, med_threshold: med, high_threshold: high} = accountInfo.thresholds
+            signatureRequirements.setThresholds({low, med, high})
             //detect min required threshold
-            for (let { key, weight } of signers) {
-                const signer = { key, weight }
+            for (const {key, weight} of signers) {
+                const signer = {key, weight}
                 if (key === id) {
                     signer.isMaster = true
                 }
@@ -173,7 +175,7 @@ class SignersInspector {
             }
             //handle accounts that don't exist yet
             if (!signers.length) {
-                signatureRequirements.addSigner({ key: id, weight: 1 })
+                signatureRequirements.addSigner({key: id, weight: 1})
             }
             //reorder by weight to simplify optimal schema calculation
             signatureRequirements.sortSigners()
@@ -182,7 +184,7 @@ class SignersInspector {
         }
 
         if (this.extraSigners && this.extraSigners.constructor === Array && this.extraSigners.length > 0) {
-            for (let extraSigner of this.extraSigners)
+            for (const extraSigner of this.extraSigners)
                 req.push(new ExtraSignatureRequirments(extraSigner))
         }
 
