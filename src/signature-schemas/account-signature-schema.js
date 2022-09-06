@@ -1,3 +1,4 @@
+import SignatureRequirementsTypes from './requirements/signature-requirements-types'
 import SignatureSchema from './signature-schema'
 
 class AccountSignatureSchema extends SignatureSchema {
@@ -14,20 +15,34 @@ class AccountSignatureSchema extends SignatureSchema {
     discoverSigners(threshold, availableSigners) {
         const res = []
         threshold = this.normalizeThreshold(threshold)
-        for (let {signers} of this.requirements) {
-            let totalWeight = 0
-            //find optimal signers
-            for (let signer of signers) {
-                if (!availableSigners || availableSigners.includes(signer.key)) {
-                    totalWeight += signer.weight
-                    if (!res.includes(signer.key)) {
-                        res.push(signer.key)
+        for (const requirements of this.requirements) {
+            switch (requirements.type) {
+                case SignatureRequirementsTypes.ACCOUNT_SIGNATURE:
+                    {
+                        const {signers} = requirements
+                        let totalWeight = 0
+                        //find optimal signers
+                        for (const signer of signers) {
+                            if (!availableSigners || availableSigners.includes(signer.key)) {
+                                totalWeight += signer.weight
+                                if (!res.includes(signer.key)) {
+                                    res.push(signer.key)
+                                }
+                                if (totalWeight >= threshold) break
+                            }
+                        }
+                        //if total weight is still lower than the threshold, it means that we can't find the schema
+                        if (totalWeight < threshold || totalWeight === 0) return []
                     }
-                    if (totalWeight >= threshold) break
-                }
+                    break
+                case SignatureRequirementsTypes.EXTRA_SIGNATURE:
+                    //if there is no extra signature signer, it means that we can't find the schema
+                    if (availableSigners && !availableSigners.includes(requirements.key)) return []
+                    res.push(requirements.key)
+                    break
+                default:
+                    throw new Error('Unknow/unsupported signature requirements type')
             }
-            //if total weight is still lower than the threshold, it means that we can't find the schema
-            if (totalWeight < threshold || totalWeight === 0) return []
         }
         return res
     }

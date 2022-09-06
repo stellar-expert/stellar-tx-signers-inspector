@@ -1,3 +1,6 @@
+import SignatureRequirementsBase from './signature-requirements-base'
+import SignatureRequirementsTypes from './signature-requirements-types'
+
 /**
  * @typedef {Object} SignerDescriptor
  * @property {String} key - Signer id.
@@ -8,12 +11,13 @@
 /**
  * Required account signatures descriptor.
  */
-class AccountSignatureRequirements {
+class AccountSignatureRequirements extends SignatureRequirementsBase {
     /**
      * @param {String} id - Account id.
      * @param {Number} minThreshold - Minimum required threshold.
      */
     constructor(id, minThreshold) {
+        super(SignatureRequirementsTypes.ACCOUNT_SIGNATURE)
         this.id = id
         this.minThreshold = minThreshold
         this.signers = []

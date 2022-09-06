@@ -1,5 +1,5 @@
-import AccountInfo from '../src/account-info'
 import {Keypair} from 'stellar-sdk'
+import AccountInfo from '../src/account-info'
 import {fakeHorizon} from './account-signer-test-utils'
 
 class FakeAccountInfo extends AccountInfo {

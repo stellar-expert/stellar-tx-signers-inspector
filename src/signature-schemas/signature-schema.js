@@ -1,9 +1,9 @@
-import AccountSignatureRequirements from '../account-signature-requirements'
+import SignatureRequirementsTypes from './requirements/signature-requirements-types'
 
 class SignatureSchema {
     /**
      * Create new signature schema for a given transaction/account
-     * @param {Array<AccountSignatureRequirements>} requirements - The requirements tree that fully describes source accounts and weights.
+     * @param {Array<SignatureRequirementsBase>} requirements - The requirements tree that fully describes source accounts and weights.
      * @param {Array<string>} warnings - Detailed description of conditions that can't be fully checked in runtime and may cause a transaction to fail.
      */
     constructor({requirements = [], warnings = []}) {
@@ -14,7 +14,7 @@ class SignatureSchema {
 
     /**
      * The requirements tree that fully describes source accounts and weights required for a transaction to succeed.
-     * @type {Array<AccountSignatureRequirements>}
+     * @type {Array<SignatureRequirementsBase>}
      */
     requirements
 
@@ -30,9 +30,21 @@ class SignatureSchema {
      */
     getAllPotentialSigners() {
         const allSigners = new Set()
-        for (const {signers} of this.requirements) {
-            for (const {key} of signers) {
-                allSigners.add(key)
+        for (const requirement of this.requirements) {
+            switch (requirement.type) {
+                case SignatureRequirementsTypes.ACCOUNT_SIGNATURE:
+                    {
+                        const {signers} = requirement
+                        for (const {key} of signers) {
+                            allSigners.add(key)
+                        }
+                    }
+                    break
+                case SignatureRequirementsTypes.EXTRA_SIGNATURE:
+                    allSigners.add(requirement.key)
+                    break
+                default:
+                    throw new Error('Unknown/unsupport requirement type')
             }
         }
         return Array.from(allSigners)
