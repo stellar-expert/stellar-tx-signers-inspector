@@ -43,7 +43,6 @@
     "@stellar-expert/eslint-config-js": "github:stellar-expert/eslint-config-js",
     "babel-loader": "^8.1.0",
     "chai": "^4.2.0",
-    "eslint": "^8.23.0",
     "mocha": "^7.2.0",
     "sinon": "^9.2.1 ",
     "terser-webpack-plugin": "^4.2.3",
