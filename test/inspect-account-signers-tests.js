@@ -1,6 +1,7 @@
+/*eslint-disable no-undef */
+import {inspectAccountSigners} from '../src'
 import {fakeHorizon} from './account-signer-test-utils'
 import FakeAccountInfo from './fake-account-info'
-import {inspectAccountSigners} from '../src'
 
 describe('inspectAccountSigners() tests', function () {
     before(() => {
@@ -12,8 +13,8 @@ describe('inspectAccountSigners() tests', function () {
     })
 
     it('discovers signers for a simple account without multisig', async function () {
-        const src = FakeAccountInfo.basic(),
-            extra = FakeAccountInfo.empty
+        const src = FakeAccountInfo.basic()
+        const extra = FakeAccountInfo.empty
 
         const schema = await inspectAccountSigners(src.id)
 
@@ -29,17 +30,17 @@ describe('inspectAccountSigners() tests', function () {
     })
 
     it('discovers signers for a simple account with multisig', async function () {
-        const signerA = FakeAccountInfo.empty,
-            signerB = FakeAccountInfo.empty,
-            signerC = FakeAccountInfo.empty,
-            signerD = FakeAccountInfo.empty,
-            src = FakeAccountInfo.basic()
-                .withThresholds(2, 4, 6)
-                .withMasterWeight(0)
-                .withSigner(signerA, 4)
-                .withSigner(signerB, 3)
-                .withSigner(signerC, 2)
-                .withSigner(signerD, 1)
+        const signerA = FakeAccountInfo.empty
+        const signerB = FakeAccountInfo.empty
+        const signerC = FakeAccountInfo.empty
+        const signerD = FakeAccountInfo.empty
+        const src = FakeAccountInfo.basic()
+            .withThresholds(2, 4, 6)
+            .withMasterWeight(0)
+            .withSigner(signerA, 4)
+            .withSigner(signerB, 3)
+            .withSigner(signerC, 2)
+            .withSigner(signerD, 1)
 
         const schema = await inspectAccountSigners(src.id)
 
@@ -65,5 +66,4 @@ describe('inspectAccountSigners() tests', function () {
         expect(schema.checkAuthExtra(6, [signerA.id, signerD.id])).to.eql([]) //not enough weight
         expect(schema.checkAuthExtra('high', [signerA.id, signerD.id, signerC.id])).to.eql([signerD.id])
     })
-
 })

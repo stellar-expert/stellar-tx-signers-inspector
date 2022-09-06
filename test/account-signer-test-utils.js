@@ -1,5 +1,4 @@
-import { Asset, Operation, TransactionBuilder, Transaction, Networks, Keypair } from 'stellar-sdk'
-import { HorizonAxiosClient } from 'stellar-sdk'
+import {HorizonAxiosClient, TransactionBuilder, Networks, Keypair} from 'stellar-sdk'
 
 class FakeHorizon {
     constructor(props) {
@@ -25,13 +24,14 @@ class FakeHorizon {
     }
 
     stubRequests() {
+        //eslint-disable-next-line no-undef
         sinon
             .stub(HorizonAxiosClient, 'get')
             .callsFake(url => {
-                const [_, id] = /accounts\/(\w+)/.exec(url),
-                    account = this.accounts[id]
-                if (account) return Promise.resolve({ data: account })
-                return Promise.reject({ response: { status: 404, statusText: 'Not found', data: { status: 404 } } })
+                const [_, id] = /accounts\/(\w+)/.exec(url)
+                const account = this.accounts[id]
+                if (account) return Promise.resolve({data: account})
+                return Promise.reject({response: {status: 404, statusText: 'Not found', data: {status: 404}}})
             })
     }
 
@@ -50,7 +50,7 @@ export const fakeHorizon = new FakeHorizon()
  * @returns {Transaction}
  */
 export function buildTransaction(source, operations, extraSigners) {
-    const builder = new TransactionBuilder(source, { fee: 10000, networkPassphrase: Networks.TESTNET })
+    const builder = new TransactionBuilder(source, {fee: 10000, networkPassphrase: Networks.TESTNET})
     for (const op of operations) {
         builder.addOperation(op)
     }

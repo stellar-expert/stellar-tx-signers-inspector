@@ -1,4 +1,3 @@
-import SignatureRequirementsBase from './requirements/signature-requirements-base'
 import SignatureRequirementsTypes from './requirements/signature-requirements-types'
 
 class SignatureSchema {
@@ -7,7 +6,7 @@ class SignatureSchema {
      * @param {Array<SignatureRequirementsBase>} requirements - The requirements tree that fully describes source accounts and weights.
      * @param {Array<string>} warnings - Detailed description of conditions that can't be fully checked in runtime and may cause a transaction to fail.
      */
-    constructor({ requirements = [], warnings = [] }) {
+    constructor({requirements = [], warnings = []}) {
         this.requirements = requirements
         this.warnings = warnings
         Object.freeze(this)
@@ -34,9 +33,11 @@ class SignatureSchema {
         for (const requirement of this.requirements) {
             switch (requirement.type) {
                 case SignatureRequirementsTypes.ACCOUNT_SIGNATURE:
-                    const { signers } = requirement
-                    for (const { key } of signers) {
-                        allSigners.add(key)
+                    {
+                        const {signers} = requirement
+                        for (const {key} of signers) {
+                            allSigners.add(key)
+                        }
                     }
                     break
                 case SignatureRequirementsTypes.EXTRA_SIGNATURE:

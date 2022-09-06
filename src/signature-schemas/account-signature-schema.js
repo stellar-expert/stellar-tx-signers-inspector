@@ -15,23 +15,25 @@ class AccountSignatureSchema extends SignatureSchema {
     discoverSigners(threshold, availableSigners) {
         const res = []
         threshold = this.normalizeThreshold(threshold)
-        for (let requirements of this.requirements) {
+        for (const requirements of this.requirements) {
             switch (requirements.type) {
                 case SignatureRequirementsTypes.ACCOUNT_SIGNATURE:
-                    const { signers } = requirements
-                    let totalWeight = 0
-                    //find optimal signers
-                    for (let signer of signers) {
-                        if (!availableSigners || availableSigners.includes(signer.key)) {
-                            totalWeight += signer.weight
-                            if (!res.includes(signer.key)) {
-                                res.push(signer.key)
+                    {
+                        const {signers} = requirements
+                        let totalWeight = 0
+                        //find optimal signers
+                        for (const signer of signers) {
+                            if (!availableSigners || availableSigners.includes(signer.key)) {
+                                totalWeight += signer.weight
+                                if (!res.includes(signer.key)) {
+                                    res.push(signer.key)
+                                }
+                                if (totalWeight >= threshold) break
                             }
-                            if (totalWeight >= threshold) break
                         }
+                        //if total weight is still lower than the threshold, it means that we can't find the schema
+                        if (totalWeight < threshold || totalWeight === 0) return []
                     }
-                    //if total weight is still lower than the threshold, it means that we can't find the schema
-                    if (totalWeight < threshold || totalWeight === 0) return []
                     break
                 case SignatureRequirementsTypes.EXTRA_SIGNATURE:
                     //if there is no extra signature signer, it means that we can't find the schema
