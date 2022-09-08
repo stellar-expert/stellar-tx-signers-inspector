@@ -1,6 +1,7 @@
 /*eslint-disable no-undef */
+import {Keypair} from 'stellar-sdk'
 import {inspectAccountSigners} from '../src'
-import {fakeHorizon} from './account-signer-test-utils'
+import {fakeHorizon, getSignedPayloadKey} from './account-signer-test-utils'
 import FakeAccountInfo from './fake-account-info'
 
 describe('inspectAccountSigners() tests', function () {
@@ -30,7 +31,7 @@ describe('inspectAccountSigners() tests', function () {
     })
 
     it('discovers signers for a simple account with multisig', async function () {
-        const signerA = FakeAccountInfo.empty
+        const signerA = getSignedPayloadKey(Keypair.random().rawPublicKey(), Buffer.from('test'))
         const signerB = FakeAccountInfo.empty
         const signerC = FakeAccountInfo.empty
         const signerD = FakeAccountInfo.empty
@@ -45,25 +46,25 @@ describe('inspectAccountSigners() tests', function () {
         const schema = await inspectAccountSigners(src.id)
 
         expect(schema.warnings.length).to.equal(0)
-        expect(schema.getAllPotentialSigners()).to.have.members([signerA.id, signerB.id, signerC.id, signerD.id])
+        expect(schema.getAllPotentialSigners()).to.have.members([signerA, signerB.id, signerC.id, signerD.id])
 
-        expect(schema.discoverSigners(2)).to.have.members([signerA.id])
+        expect(schema.discoverSigners(2)).to.have.members([signerA])
         expect(schema.discoverSigners('low', [signerD.id, signerC.id, signerB.id])).to.have.members([signerB.id])
         expect(schema.discoverSigners(4, [signerD.id, signerC.id, signerB.id])).to.have.members([signerB.id, signerC.id])
         expect(schema.discoverSigners(6, [signerD.id, signerC.id, signerB.id])).to.have.members([signerB.id, signerC.id, signerD.id])
-        expect(schema.discoverSigners('high')).to.have.members([signerA.id, signerB.id])
+        expect(schema.discoverSigners('high')).to.have.members([signerA, signerB.id])
 
-        expect(schema.checkFeasibility(2, [signerA.id])).to.be.true
+        expect(schema.checkFeasibility(2, [signerA])).to.be.true
         expect(schema.checkFeasibility('med', [signerD.id, signerC.id, signerB.id])).to.be.true
         expect(schema.checkFeasibility('med', [signerD.id])).to.be.false
-        expect(schema.checkFeasibility('high', [signerA.id, signerD.id])).to.be.false
-        expect(schema.checkFeasibility(6, [signerA.id, signerD.id, signerC.id])).to.be.true
+        expect(schema.checkFeasibility('high', [signerA, signerD.id])).to.be.false
+        expect(schema.checkFeasibility(6, [signerA, signerD.id, signerC.id])).to.be.true
 
-        expect(schema.checkAuthExtra(2, [signerA.id])).to.eql([])
+        expect(schema.checkAuthExtra(2, [signerA])).to.eql([])
         expect(schema.checkAuthExtra(2, [signerD.id, signerC.id, signerB.id])).to.eql([signerD.id, signerC.id])
         expect(schema.checkAuthExtra('med', [signerD.id, signerC.id, signerB.id])).to.eql([signerD.id])
         expect(schema.checkAuthExtra('high', [signerD.id, signerC.id, signerB.id])).to.eql([])
-        expect(schema.checkAuthExtra(6, [signerA.id, signerD.id])).to.eql([]) //not enough weight
-        expect(schema.checkAuthExtra('high', [signerA.id, signerD.id, signerC.id])).to.eql([signerD.id])
+        expect(schema.checkAuthExtra(6, [signerA, signerD.id])).to.eql([]) //not enough weight
+        expect(schema.checkAuthExtra('high', [signerA, signerD.id, signerC.id])).to.eql([signerD.id])
     })
 })
