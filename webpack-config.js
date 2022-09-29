@@ -1,6 +1,6 @@
-const path = require('path'),
-    webpack = require('webpack'),
-    TerserPlugin = require('terser-webpack-plugin')
+const path = require('path')
+const webpack = require('webpack')
+const TerserPlugin = require('terser-webpack-plugin')
 
 const settings = {
     mode: 'production',
@@ -11,8 +11,11 @@ const settings = {
     output: {
         path: path.join(__dirname, './lib'),
         filename: '[name].js',
-        library: 'stellarTxSignersInspector',
-        libraryTarget: 'umd',
+        library: {
+            name: 'stellarTxSignersInspector',
+            type: 'umd2',
+            export: 'default'
+        },
         globalObject: 'this'
     },
     module: {
@@ -38,11 +41,11 @@ const settings = {
         })
     ],
     optimization: {
+        minimize: true,
         minimizer: [new TerserPlugin({
             parallel: true,
-            extractComments: false,
             terserOptions: {
-                warnings: true
+                toplevel: true
             }
         })]
     }

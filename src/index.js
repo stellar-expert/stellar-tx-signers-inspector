@@ -3,6 +3,7 @@ import SignersInspector from './signers-inspector'
 
 const defaultHorizon = 'https://horizon.stellar.org'
 
+
 /**
  * @typedef {Object} SigningThresholds
  * @property {number} low_threshold - Account threshold for "low-threshold" operations.
@@ -77,3 +78,12 @@ export async function inspectAccountSigners(sourceAccount, options = null) {
     //build and return composed signatures schema
     return inspector.buildSignatureSchema('account')
 }
+
+const stellarTxSignersInspector = {inspectTransactionSigners, inspectAccountSigners}
+
+export default stellarTxSignersInspector
+
+/**
+ * Discover required signers, weights, and build optimal signature schema for Stellar transactions.
+ * @module @stellar-expert/tx-signers-inspector
+ */

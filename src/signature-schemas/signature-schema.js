@@ -1,6 +1,9 @@
 import SignatureRequirementsTypes from './requirements/signature-requirements-types'
 
-class SignatureSchema {
+/**
+ * Signature scheme analysis result with requirements.
+ */
+export default class SignatureSchema {
     /**
      * Create new signature schema for a given transaction/account
      * @param {Array<SignatureRequirementsBase>} requirements - The requirements tree that fully describes source accounts and weights.
@@ -32,13 +35,12 @@ class SignatureSchema {
         const allSigners = new Set()
         for (const requirement of this.requirements) {
             switch (requirement.type) {
-                case SignatureRequirementsTypes.ACCOUNT_SIGNATURE:
-                    {
-                        const {signers} = requirement
-                        for (const {key} of signers) {
-                            allSigners.add(key)
-                        }
+                case SignatureRequirementsTypes.ACCOUNT_SIGNATURE: {
+                    const {signers} = requirement
+                    for (const {key} of signers) {
+                        allSigners.add(key)
                     }
+                }
                     break
                 case SignatureRequirementsTypes.EXTRA_SIGNATURE:
                     allSigners.add(requirement.key)
@@ -50,5 +52,3 @@ class SignatureSchema {
         return Array.from(allSigners)
     }
 }
-
-export default SignatureSchema

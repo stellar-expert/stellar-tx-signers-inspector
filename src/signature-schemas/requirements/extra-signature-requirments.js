@@ -1,7 +1,7 @@
 import SignatureRequirementsBase from './signature-requirements-base'
 import SignatureRequirementsTypes from './signature-requirements-types'
 
-class ExtraSignatureRequirments extends SignatureRequirementsBase {
+export default class ExtraSignatureRequirments extends SignatureRequirementsBase {
     /**
      * @param {String} key - Signer id.
      */
@@ -10,5 +10,3 @@ class ExtraSignatureRequirments extends SignatureRequirementsBase {
         this.key = key
     }
 }
-
-export default ExtraSignatureRequirments

@@ -1,11 +1,10 @@
 import SignatureRequirementsTypes from './requirements/signature-requirements-types'
 import SignatureSchema from './signature-schema'
 
-class AccountSignatureSchema extends SignatureSchema {
-    constructor(options) {
-        super(options)
-    }
-
+/**
+ * Signature scheme analysis result with requirements for a given account.
+ */
+export default class AccountSignatureSchema extends SignatureSchema {
     /**
      * Discover optimal signers list based on preferred accounts.
      * @param {'low'|'med'|'high'|Number} threshold - Threshold to meet.
@@ -17,23 +16,22 @@ class AccountSignatureSchema extends SignatureSchema {
         threshold = this.normalizeThreshold(threshold)
         for (const requirements of this.requirements) {
             switch (requirements.type) {
-                case SignatureRequirementsTypes.ACCOUNT_SIGNATURE:
-                    {
-                        const {signers} = requirements
-                        let totalWeight = 0
-                        //find optimal signers
-                        for (const signer of signers) {
-                            if (!availableSigners || availableSigners.includes(signer.key)) {
-                                totalWeight += signer.weight
-                                if (!res.includes(signer.key)) {
-                                    res.push(signer.key)
-                                }
-                                if (totalWeight >= threshold) break
+                case SignatureRequirementsTypes.ACCOUNT_SIGNATURE: {
+                    const {signers} = requirements
+                    let totalWeight = 0
+                    //find optimal signers
+                    for (const signer of signers) {
+                        if (!availableSigners || availableSigners.includes(signer.key)) {
+                            totalWeight += signer.weight
+                            if (!res.includes(signer.key)) {
+                                res.push(signer.key)
                             }
+                            if (totalWeight >= threshold) break
                         }
-                        //if total weight is still lower than the threshold, it means that we can't find the schema
-                        if (totalWeight < threshold || totalWeight === 0) return []
                     }
+                    //if total weight is still lower than the threshold, it means that we can't find the schema
+                    if (totalWeight < threshold || totalWeight === 0) return []
+                }
                     break
                 case SignatureRequirementsTypes.EXTRA_SIGNATURE:
                     //if there is no extra signature signer, it means that we can't find the schema
@@ -83,15 +81,16 @@ class AccountSignatureSchema extends SignatureSchema {
     /**
      * Convert threshold level from mnemonic to number if needed.
      * @param {String|Number} threshold
+     * @return {Number}
      */
     normalizeThreshold(threshold) {
         if (typeof threshold === 'string') {
             threshold = this.requirements[0].thresholds[threshold.toLowerCase().split('_')[0]]
-            if (threshold === undefined) throw new Error(`Invalid threshold level: "${threshold}".`)
+            if (threshold === undefined)
+                throw new Error(`Invalid threshold level: "${threshold}".`)
         }
-        if (typeof threshold !== 'number') throw new Error(`Invalid threshold level: "${threshold}".`)
+        if (typeof threshold !== 'number')
+            throw new Error(`Invalid threshold level: "${threshold}".`)
         return threshold
     }
 }
-
-export default AccountSignatureSchema

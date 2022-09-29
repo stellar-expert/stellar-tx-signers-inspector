@@ -1,11 +1,10 @@
 import SignatureRequirementsTypes from './requirements/signature-requirements-types'
 import SignatureSchema from './signature-schema'
 
-class TransactionSignatureSchema extends SignatureSchema {
-    constructor(options) {
-        super(options)
-    }
-
+/**
+ * Signature scheme analysis result with requirements for a given transactions.
+ */
+export default class TransactionSignatureSchema extends SignatureSchema {
     /**
      * Discover optimal signers list based on preferred accounts.
      * @param {Array<string>} [availableSigners] - Optional constraint, a list of available signers to check (public keys).
@@ -15,23 +14,22 @@ class TransactionSignatureSchema extends SignatureSchema {
         const res = []
         for (const requirements of this.requirements) {
             switch (requirements.type) {
-                case SignatureRequirementsTypes.ACCOUNT_SIGNATURE:
-                    {
-                        const {signers, minThreshold} = requirements
-                        let totalWeight = 0
-                        //find optimal signers
-                        for (const signer of signers) {
-                            if (!availableSigners || availableSigners.includes(signer.key)) {
-                                totalWeight += signer.weight
-                                if (!res.includes(signer.key)) {
-                                    res.push(signer.key)
-                                }
-                                if (totalWeight >= minThreshold) break
+                case SignatureRequirementsTypes.ACCOUNT_SIGNATURE: {
+                    const {signers, minThreshold} = requirements
+                    let totalWeight = 0
+                    //find optimal signers
+                    for (const signer of signers) {
+                        if (!availableSigners || availableSigners.includes(signer.key)) {
+                            totalWeight += signer.weight
+                            if (!res.includes(signer.key)) {
+                                res.push(signer.key)
                             }
+                            if (totalWeight >= minThreshold) break
                         }
-                        //if total weight is still lower than the threshold, it means that we can't find the schema
-                        if (totalWeight < minThreshold || totalWeight === 0) return []
                     }
+                    //if total weight is still lower than the threshold, it means that we can't find the schema
+                    if (totalWeight < minThreshold || totalWeight === 0) return []
+                }
                     break
                 case SignatureRequirementsTypes.EXTRA_SIGNATURE:
                     //if there is no extra signature signer, it means that we can't find the schema
@@ -49,7 +47,7 @@ class TransactionSignatureSchema extends SignatureSchema {
     /**
      * Check if potential total available weight matches the threshold.
      * @param {Array<string>} signers - A potential list of transaction signers.
-     * @returns {Boolean} - True if the total weight of proposed signers is enough for to fully sign the transaction and false otherwise.
+     * @returns {boolean} - True if the total weight of proposed signers is enough for to fully sign the transaction and false otherwise.
      */
     checkFeasibility(signers) {
         return this.discoverSigners(signers).length > 0
@@ -86,5 +84,3 @@ class TransactionSignatureSchema extends SignatureSchema {
         return unneededSigners
     }
 }
-
-export default TransactionSignatureSchema

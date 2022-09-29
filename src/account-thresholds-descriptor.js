@@ -1,4 +1,4 @@
-class AccountThresholdsDescriptor {
+export default class AccountThresholdsDescriptor {
     /**
      * @param {String} accountId - Source account.
      */
@@ -19,5 +19,3 @@ class AccountThresholdsDescriptor {
         this.thresholds[threshold] = true
     }
 }
-
-export default AccountThresholdsDescriptor

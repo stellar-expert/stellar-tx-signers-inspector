@@ -11,7 +11,7 @@ import SignatureRequirementsTypes from './signature-requirements-types'
 /**
  * Required account signatures descriptor.
  */
-class AccountSignatureRequirements extends SignatureRequirementsBase {
+export default class AccountSignatureRequirements extends SignatureRequirementsBase {
     /**
      * @param {String} id - Account id.
      * @param {Number} minThreshold - Minimum required threshold.
@@ -78,5 +78,3 @@ class AccountSignatureRequirements extends SignatureRequirementsBase {
         })
     }
 }
-
-export default AccountSignatureRequirements

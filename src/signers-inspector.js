@@ -7,7 +7,7 @@ import ExtraSignatureRequirments from './signature-schemas/requirements/extra-si
 
 const allThresholdLevels = ['low', 'med', 'high']
 
-class SignersInspector {
+export default class SignersInspector {
     constructor() {
         this.sources = {}
         this.warnings = []
@@ -57,13 +57,12 @@ class SignersInspector {
                 return 'low'
             case 'accountMerge':
                 return 'high'
-            case 'setOptions':
-                {
-                    const highKeys = ['masterWeight', 'lowThreshold', 'medThreshold', 'highThreshold', 'signer']
-                    for (const key of highKeys) {
-                        if (operation[key]) return 'high'
-                    }
+            case 'setOptions': {
+                const highKeys = ['masterWeight', 'lowThreshold', 'medThreshold', 'highThreshold', 'signer']
+                for (const key of highKeys) {
+                    if (operation[key]) return 'high'
                 }
+            }
                 break
         }
         return 'med'
@@ -206,5 +205,3 @@ class SignersInspector {
         })
     }
 }
-
-export default SignersInspector
