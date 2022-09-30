@@ -2,7 +2,7 @@
 import {Operation, Asset, Keypair} from 'stellar-sdk'
 import {inspectTransactionSigners} from '../src/index'
 import SignatureRequirementsTypes from '../src/signature-schemas/requirements/signature-requirements-types'
-import {fakeHorizon, buildTransaction, buildFeeBumpTransaction} from './account-signer-test-utils'
+import {fakeHorizon, buildTransaction, buildFeeBumpTransaction, getSignedPayloadKey} from './account-signer-test-utils'
 import FakeAccountInfo from './fake-account-info'
 
 describe('inspectTransactionSigners() tests', function () {
@@ -56,7 +56,7 @@ describe('inspectTransactionSigners() tests', function () {
 
     it('discovers signers for a multi-op tx with multisig', async function () {
         const issuerCosigner1 = FakeAccountInfo.empty
-        const issuerCosigner2 = FakeAccountInfo.empty
+        const issuerCosigner2 = getSignedPayloadKey(Keypair.random().rawPublicKey(), Buffer.from('test'))
         const sharedCosigner = FakeAccountInfo.empty
         const issuer = FakeAccountInfo.basic(10)
             .withSigner(issuerCosigner1, 4)
@@ -74,13 +74,13 @@ describe('inspectTransactionSigners() tests', function () {
             Operation.payment({destination: distributor.id, amount: '1', asset})
         ])
 
-        const potentialSigners = [issuer.id, distributor.id, issuerCosigner1.id, issuerCosigner2.id, sharedCosigner.id]
+        const potentialSigners = [issuer.id, distributor.id, issuerCosigner1.id, issuerCosigner2, sharedCosigner.id]
         const expectedRequirements = [
             {
                 id: issuer.id,
                 signers: [
                     {
-                        key: issuerCosigner2.id,
+                        key: issuerCosigner2,
                         weight: 5
                     },
                     {
@@ -137,25 +137,25 @@ describe('inspectTransactionSigners() tests', function () {
         expect(schema.getAllPotentialSigners()).to.have.members(potentialSigners)
 
         //without restrictions
-        expect(schema.discoverSigners()).to.have.members([issuerCosigner2.id, distributor.id])
+        expect(schema.discoverSigners()).to.have.members([issuerCosigner2, distributor.id])
 
         //with constrained signers
         expect(schema.discoverSigners([sharedCosigner.id, issuer.id])).to.have.members([sharedCosigner.id, issuer.id])
 
         //check feasibility
         expect(schema.checkFeasibility([sharedCosigner.id])).to.be.false
-        expect(schema.checkFeasibility([issuerCosigner2.id])).to.be.false
+        expect(schema.checkFeasibility([issuerCosigner2])).to.be.false
         expect(schema.checkFeasibility([distributor.id])).to.be.false
         expect(schema.checkFeasibility([issuer.id])).to.be.false
         expect(schema.checkFeasibility([sharedCosigner.id, issuer.id])).to.be.true
-        expect(schema.checkFeasibility([issuerCosigner2.id, distributor.id])).to.be.true
+        expect(schema.checkFeasibility([issuerCosigner2, distributor.id])).to.be.true
 
         //check for TX_BAD_AUTH_EXTRA
         expect(schema.checkAuthExtra([sharedCosigner.id])).to.eql([])
         expect(schema.checkAuthExtra([issuer.id])).to.eql([])
         expect(schema.checkAuthExtra([sharedCosigner.id, issuer.id])).to.eql([])
-        expect(schema.checkAuthExtra([issuerCosigner2.id, distributor.id, issuer.id])).to.eql([issuer.id])
-        expect(schema.checkAuthExtra([issuerCosigner2.id, distributor.id, sharedCosigner.id, issuer.id])).to.eql([sharedCosigner.id, issuer.id])
+        expect(schema.checkAuthExtra([issuerCosigner2, distributor.id, issuer.id])).to.eql([issuer.id])
+        expect(schema.checkAuthExtra([issuerCosigner2, distributor.id, sharedCosigner.id, issuer.id])).to.eql([sharedCosigner.id, issuer.id])
     })
 
     it('handles duplicate signatures', async function () {

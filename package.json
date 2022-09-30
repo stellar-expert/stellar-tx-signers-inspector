@@ -33,7 +33,7 @@
     "node": ">=16"
   },
   "peerDependencies": {
-    "stellar-sdk": ">=10.1.2"
+    "stellar-sdk": ">=10.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.19.0",

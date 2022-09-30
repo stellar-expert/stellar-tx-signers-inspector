@@ -1,4 +1,5 @@
 import {HorizonAxiosClient, TransactionBuilder, Networks, Keypair} from 'stellar-sdk'
+import {xdr, SignerKey} from 'stellar-base'
 
 class FakeHorizon {
     constructor(props) {
@@ -69,4 +70,17 @@ export function buildTransaction(source, operations, extraSigners) {
  */
 export function buildFeeBumpTransaction(innerTx, source, baseFee = '10000') {
     return TransactionBuilder.buildFeeBumpTransaction(Keypair.fromPublicKey(source.id), baseFee, innerTx, Networks.TESTNET)
+}
+
+/**
+ * Generates a singed payload address.
+ * @param {Buffer} pubkey - ed25510 public key.
+ * @param {Buffer} payload - Payload to sign.
+ * @returns {String} - Signed payload key.
+ */
+export function getSignedPayloadKey(pubkey, payload) {
+    const signedPayload = new xdr.SignerKeyEd25519SignedPayload({ed25519: pubkey, payload})
+    const xdrSignerKey = xdr.SignerKey.signerKeyTypeEd25519SignedPayload(signedPayload)
+    const address = SignerKey.encodeSignerKey(xdrSignerKey)
+    return address
 }
