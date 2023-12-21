@@ -1,4 +1,4 @@
-import {Server, StrKey} from 'stellar-sdk'
+import {Horizon, StrKey} from '@stellar/stellar-sdk'
 import AccountThresholdsDescriptor from './account-thresholds-descriptor'
 import AccountSignatureSchema from './signature-schemas/account-signature-schema'
 import TransactionSignatureSchema from './signature-schemas/transaction-signature-schema'
@@ -18,7 +18,6 @@ export default class SignersInspector {
      * @type {Object}
      */
     sources
-
 
     /**
      * @type {Array<string>}
@@ -101,7 +100,7 @@ export default class SignersInspector {
      * @return {Promise}
      */
     async loadAccounts(horizonUrl, predefinedAccountsInfo = []) {
-        const horizon = new Server(horizonUrl)
+        const horizon = new Horizon.Server(horizonUrl)
         const res = {}
         for (const source of Object.keys(this.sources)) {
             const existing = predefinedAccountsInfo.find(ai => ai.id === source)

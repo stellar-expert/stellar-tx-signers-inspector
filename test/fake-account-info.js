@@ -1,5 +1,4 @@
-import {Keypair} from 'stellar-sdk'
-import Bignumber from 'bignumber.js'
+import {Keypair} from '@stellar/stellar-sdk'
 import {fakeHorizon} from './account-signer-test-utils'
 
 /**
@@ -41,7 +40,7 @@ export default class FakeAccountInfo {
     }
 
     incrementSequenceNumber() {
-        this.sequence = new Bignumber(this.sequence).add(new Bignumber(1)).toString()
+        this.sequence = (BigInt(this.sequence)+1n).toString()
     }
 
     /**

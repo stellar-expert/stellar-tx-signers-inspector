@@ -1,4 +1,4 @@
-import {SignerKey} from 'stellar-sdk'
+import {SignerKey} from '@stellar/stellar-sdk'
 import SignersInspector from './signers-inspector'
 
 const defaultHorizon = 'https://horizon.stellar.org'

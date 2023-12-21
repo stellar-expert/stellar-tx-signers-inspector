@@ -1,14 +1,12 @@
 # Stellar Tx signers inspector
- 
-[![CircleCI](https://circleci.com/gh/stellar-expert/stellar-tx-signers-inspector.svg?style=svg)](https://circleci.com/gh/stellar-expert/stellar-tx-signers-inspector)
 
-Discover required signers, weights, and build optimal signature schema for 
+> Discover required signers, weights, and build optimal signature schema for 
 [Stellar](https://stellar.org) transactions and accounts.
 
 ## Usage
 
 ```
-npm install -S @stellar-expert/tx-signers-inspector
+npm i @stellar-expert/tx-signers-inspector
 ```
 
 ### Analyze transaction signers
@@ -27,7 +25,7 @@ const schema = await inspectTransactionSigners(tx)
 Method `getAllPotentialSigners()` returns all signers for all accounts
 used as `source` in either the transaction itself or any of its operations.
 
-```javascript
+```js
 schema.getAllPotentialSigners()
 //returns something like ['GA7...K0M', 'GCF...DLP', 'GA0...MMR']
 ```
@@ -39,7 +37,7 @@ It automatically detects weights and performs an advanced lookup to find the bes
 signing schema in terms of the minimum signers count. This is especially useful
 for complex transactions containing multiple operations with different sources.
 
-```javascript
+```js
 schema.discoverSigners()
 //returns something like ['GA7...K0M']
 ```
@@ -51,7 +49,7 @@ returns the optimal signature schema (just like calling it without arguments)
 respecting the restrictions list. Only explicitly provided signers will be used
 for a schema lookup.
 
-```javascript
+```js
 schema.discoverSigners(['GCF...DLP', 'GA0...MMR', 'GBP...D71'])
 //returns something like ['GCF...DLP', 'GA0...MMR']
 ```
@@ -63,7 +61,7 @@ fully signed using a given set of available signers. It returns `true` if
 the total weight of the provided signers is sufficient to fully sign the 
 transaction and `false` otherwise.
 
-```javascript
+```js
 schema.checkFeasibility(['GCF...DLP', 'GA0...MMR', 'GBP...D71'])
 //returns true
 schema.checkFeasibility(['GA0...MMR', 'GBP...D71'])
@@ -79,7 +77,7 @@ situations automatically and avoid excessive signatures.
 Method `checkAuthExtra(availableSigners)` returns a list of signers that can
 cause the `TX_BAD_AUTH_EXTRA` error.
 
-```javascript
+```js
 schema.checkAuthExtra(['GCF...DLP', 'GA0...MMR'])
 //returns []
 schema.checkAuthExtra(['GA7...K0M', 'GCF...DLP', 'GA0...MMR'])
@@ -90,7 +88,7 @@ schema.checkAuthExtra(['GA7...K0M', 'GCF...DLP', 'GA0...MMR'])
 
 Accounts signing requirements can be analyzed similar to transactions.
 
-```javascript
+```js
 import {inspectAccountSigners} from '@stellar-expert/tx-signers-inspector'
 //build signatures schema for an account
 const schema = await inspectAccountSigners('GDF...ER2')
@@ -100,7 +98,7 @@ const schema = await inspectAccountSigners('GDF...ER2')
 
 Method `getAllPotentialSigners()` returns all account signers.
 
-```javascript
+```js
 schema.getAllPotentialSigners()
 //returns something like ['GA7...K0M', 'GCF...DLP', 'GA0...MMR']
 ```
@@ -110,7 +108,7 @@ schema.getAllPotentialSigners()
 Method `discoverSigners(weight)` returns the list of the optimal signers to
 match the required signatures weight.
 
-```javascript
+```js
 schema.discoverSigners('low')
 //returns something like ['GA7...K0M']
 ```
@@ -122,7 +120,7 @@ argument returns the optimal signature schema to match the required signatures
 weight (just like calling it without arguments) respecting the restrictions list.
 Only explicitly provided signers will be used for a schema lookup.
 
-```javascript
+```js
 schema.discoverSigners('med', ['GCF...DLP', 'GA0...MMR', 'GBP...D71'])
 //returns something like ['GCF...DLP', 'GA0...MMR']
 ```
@@ -134,7 +132,7 @@ transaction with a given threshold can be fully signed using a given set of
 available signers. It returns `true` if the total weight of the provided signers
 is sufficient to meet the threshold requirements and `false` otherwise. 
 
-```javascript
+```js
 schema.checkFeasibility('med', ['GCF...DLP', 'GA0...MMR'])
 //returns true
 schema.checkFeasibility('high', ['GCF...DLP', 'GA0...MMR'])
@@ -147,7 +145,7 @@ Method `checkAuthExtra(weight, availableSigners)` returns a list of signers that
 can cause the `TX_BAD_AUTH_EXTRA` error when signing a transaction the requires 
 a given account threshold.
 
-```javascript
+```js
 schema.checkAuthExtra('med', ['GCF...DLP', 'GA0...MMR'])
 //returns []
 schema.checkAuthExtra('med', ['GA7...K0M', 'GCF...DLP', 'GA0...MMR'])
@@ -161,7 +159,7 @@ By default, `https://horizon.stellar.org` is used. To use testnet Horizon addres
 or you own server, provide `horizon` options parameter in the 
 `inspectTransactionSigners()` or `inspectAccountSigners()` method call: 
 
-```javascript
+```js
 //use testnet Horizon server instead of the default address
 const schema = await inspectTransactionSigners(tx, 
     {horizon: 'https://horizon-testnet.stellar.org'})
@@ -170,7 +168,7 @@ const schema = await inspectTransactionSigners(tx,
 To deal with cases where some account doesn't exist yet, it's possible to
 provide accounts information directly:
 
-```javascript
+```js
 //provide account information directly
 const schema = await inspectTransactionSigners(tx, {accountsInfo: [
     {

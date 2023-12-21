@@ -1,5 +1,5 @@
 /*eslint-disable no-undef */
-import {Operation, Asset, Keypair} from 'stellar-sdk'
+import {Operation, Asset, Keypair} from '@stellar/stellar-sdk'
 import {inspectTransactionSigners} from '../src/index'
 import SignatureRequirementsTypes from '../src/signature-schemas/requirements/signature-requirements-types'
 import {fakeHorizon, buildTransaction, buildFeeBumpTransaction} from './account-signer-test-utils'

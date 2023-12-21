@@ -1,4 +1,4 @@
-import {HorizonAxiosClient, TransactionBuilder, Networks, Keypair} from 'stellar-sdk'
+import {Horizon, TransactionBuilder, Networks, Keypair} from '@stellar/stellar-sdk'
 
 class FakeHorizon {
     constructor(props) {
@@ -26,7 +26,7 @@ class FakeHorizon {
     stubRequests() {
         //eslint-disable-next-line no-undef
         sinon
-            .stub(HorizonAxiosClient, 'get')
+            .stub(Horizon.AxiosClient, 'get')
             .callsFake(url => {
                 const [_, id] = /accounts\/(\w+)/.exec(url)
                 const account = this.accounts[id]
@@ -36,7 +36,7 @@ class FakeHorizon {
     }
 
     releaseRequests() {
-        HorizonAxiosClient.get.restore()
+        Horizon.AxiosClient.get.restore()
     }
 }
 
