@@ -28,7 +28,7 @@ const settings = {
         ]
     },
     externals: {
-        'stellar-sdk': 'stellar-sdk'
+        '@stellar/stellar-sdk': '@stellar/stellar-sdk'
     },
     plugins: [
         new webpack.LoaderOptionsPlugin({
