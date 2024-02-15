@@ -1,6 +1,6 @@
 {
   "name": "@stellar-expert/tx-signers-inspector",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "author": "OrbitLens<orbit@stellar.expert>",
   "description": "Discover required signers, weights, and build optimal signature schema for Stellar transactions.",
   "license": "MIT",
@@ -10,7 +10,8 @@
     "test": "mocha",
     "preversion": "npm test",
     "version": "npm run build",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "prepare": "npm run build"
   },
   "bugs": {
     "url": "https://github.com/stellar-expert/stellar-tx-signers-inspector/issues",
@@ -18,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/stellar-expert/stellar-tx-signers-inspector"
+    "url": "git+https://github.com/stellar-expert/stellar-tx-signers-inspector.git"
   },
   "main": "./lib/stellar-tx-signers-inspector.js",
   "module": "./src/index.js",
@@ -33,7 +34,7 @@
     "node": ">=18"
   },
   "peerDependencies": {
-    "@stellar/stellar-sdk": "^11.2.0"
+    "@stellar/stellar-sdk": "^11.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.19.0",
