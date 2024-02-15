@@ -16,7 +16,7 @@ const settings = {
             type: 'umd2',
             export: 'default'
         },
-        globalObject: 'this'
+        globalObject: 'globalThis'
     },
     module: {
         rules: [

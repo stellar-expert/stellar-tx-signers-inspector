@@ -1,4 +1,4 @@
-import {Horizon, StrKey} from '@stellar/stellar-sdk'
+import {Horizon, StrKey, MuxedAccount} from '@stellar/stellar-sdk'
 import AccountThresholdsDescriptor from './account-thresholds-descriptor'
 import AccountSignatureSchema from './signature-schemas/account-signature-schema'
 import TransactionSignatureSchema from './signature-schemas/transaction-signature-schema'
@@ -73,7 +73,10 @@ export default class SignersInspector {
      * @param {'low'|'med'|'high'} threshold - Threshold to meet.
      */
     addSource(source, threshold) {
-        if (!StrKey.isValidEd25519PublicKey(source))
+        if (StrKey.isValidMed25519PublicKey(source)) { //retrieve source account from muxed
+            const raw = StrKey.decodeMed25519PublicKey(source)
+            source = StrKey.encodeEd25519PublicKey(raw.slice(0, 32))
+        } else if (!StrKey.isValidEd25519PublicKey(source))
             throw new Error(`${source} is not a valid Stellar account public key.`)
         if (!threshold || !allThresholdLevels.includes(threshold))
             throw new Error(`"${threshold}" is not a valid threshold. Expected one 'low', 'med' or'high'.`)

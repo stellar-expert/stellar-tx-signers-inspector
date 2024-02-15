@@ -1,5 +1,5 @@
 /*eslint-disable no-undef */
-import {Operation, Asset, Keypair} from '@stellar/stellar-sdk'
+import {Operation, Asset, Keypair, MuxedAccount} from '@stellar/stellar-sdk'
 import {inspectTransactionSigners} from '../src/index'
 import SignatureRequirementsTypes from '../src/signature-schemas/requirements/signature-requirements-types'
 import {fakeHorizon, buildTransaction, buildFeeBumpTransaction} from './account-signer-test-utils'
@@ -262,5 +262,22 @@ describe('inspectTransactionSigners() tests', function () {
         expect(schema.discoverSigners()).to.have.members([src.id, extraSignerAddress])
         expect(schema.checkFeasibility([src.id])).to.be.false
         expect(schema.checkFeasibility([src.id, extraSignerAddress])).to.be.true
+    })
+
+    it('discover signers for tx with muxed source', async function () {
+        const src = FakeAccountInfo.basic('2')
+        const tx = buildTransaction(new MuxedAccount(src, '1'), [
+            Operation.payment({
+                destination: Keypair.random().publicKey(),
+                amount: '1',
+                asset: Asset.native()
+            })
+        ], [])
+
+        const schema = await inspectTransactionSigners(tx)
+        expect(schema.warnings.length).to.equal(0)
+        expect(schema.getAllPotentialSigners()).to.have.members([src.id])
+        expect(schema.discoverSigners()).to.have.members([src.id])
+        expect(schema.checkFeasibility([src.id])).to.be.true
     })
 })
