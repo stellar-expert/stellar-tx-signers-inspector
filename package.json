@@ -1,6 +1,6 @@
 {
   "name": "@stellar-expert/tx-signers-inspector",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "author": "OrbitLens<orbit@stellar.expert>",
   "description": "Discover required signers, weights, and build optimal signature schema for Stellar transactions.",
   "license": "MIT",
@@ -34,7 +34,7 @@
     "node": ">=18"
   },
   "peerDependencies": {
-    "@stellar/stellar-sdk": "^11.0.0"
+    "@stellar/stellar-sdk": ">11"
   },
   "devDependencies": {
     "@babel/core": "^7.19.0",
