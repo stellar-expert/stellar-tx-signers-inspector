@@ -1,5 +1,5 @@
 import {Keypair} from '@stellar/stellar-sdk'
-import {fakeHorizon} from './account-signer-test-utils'
+import {fakeHorizon} from './account-signer-test-utils.js'
 
 /**
  * Clone of account wrapper from StellarSdk

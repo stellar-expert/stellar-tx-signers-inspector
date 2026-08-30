@@ -1,12 +1,23 @@
-# Stellar Tx signers inspector
+# Stellar Tx Signers Inspector
 
 > Discover required signers, weights, and build optimal signature schema for 
 [Stellar](https://stellar.org) transactions and accounts.
 
 ## Usage
 
+Install:
+
 ```
-npm i @stellar-expert/tx-signers-inspector
+npm install @stellar-expert/tx-signers-inspector
+```
+
+Import functions:
+
+```js
+//ESM
+import {inspectTransactionSigners, inspectAccountSigners} from '@stellar-expert/tx-signers-inspector'
+//CommonJS
+const {inspectTransactionSigners, inspectAccountSigners} = require('@stellar-expert/tx-signers-inspector')
 ```
 
 ### Analyze transaction signers
@@ -192,8 +203,32 @@ const schema = await inspectTransactionSigners(tx, {accountsInfo: [
 ]})
 ```
 
+### Warnings
+
+Every schema exposes a `warnings` array describing conditions that can't be fully verified at
+analysis time. Each entry has the shape `{code, message, data}`:
+
+```js
+const schema = await inspectTransactionSigners(tx)
+schema.warnings
+//[{
+//   code: 'no_source',
+//   message: 'Source account GAU...DOE does not exist on the ledger.',
+//   data: 'GAU...DOE'
+//}]
+```
+
+## Building
+
+```
+npm build
+```
+
+Produces the UMD bundle in `lib/`. `@stellar/stellar-sdk` is treated as an external dependency
+and is expected to be available as the `StellarSdk` global in browser environments.
+
 ## Tests
 
 ```
-npm run test
+npm test
 ```

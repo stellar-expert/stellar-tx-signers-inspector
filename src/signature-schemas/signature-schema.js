@@ -1,4 +1,4 @@
-import SignatureRequirementsTypes from './requirements/signature-requirements-types'
+import SignatureRequirementsTypes from './requirements/signature-requirements-types.js'
 
 /**
  * Signature scheme analysis result with requirements.
@@ -46,7 +46,7 @@ export default class SignatureSchema {
                     allSigners.add(requirement.key)
                     break
                 default:
-                    throw new Error('Unknown/unsupport requirement type')
+                    throw new Error('Unknown/unsupported requirement type')
             }
         }
         return Array.from(allSigners)

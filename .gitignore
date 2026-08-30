@@ -1,7 +1,9 @@
 node_modules/
 .npm
 .idea
+
 /package-lock.json
 /pnpm-lock.yaml
 
 lib/
+!lib/package.json

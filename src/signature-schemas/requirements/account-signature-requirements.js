@@ -1,5 +1,5 @@
-import SignatureRequirementsBase from './signature-requirements-base'
-import SignatureRequirementsTypes from './signature-requirements-types'
+import SignatureRequirementsBase from './signature-requirements-base.js'
+import SignatureRequirementsTypes from './signature-requirements-types.js'
 
 /**
  * @typedef {Object} SignerDescriptor

@@ -1,5 +1,5 @@
 import {SignerKey} from '@stellar/stellar-sdk'
-import SignersInspector from './signers-inspector'
+import SignersInspector from './signers-inspector.js'
 
 const defaultHorizon = 'https://horizon.stellar.org'
 
@@ -78,12 +78,3 @@ export async function inspectAccountSigners(sourceAccount, options = null) {
     //build and return composed signatures schema
     return inspector.buildSignatureSchema('account')
 }
-
-const stellarTxSignersInspector = {inspectTransactionSigners, inspectAccountSigners}
-
-export default stellarTxSignersInspector
-
-/**
- * Discover required signers, weights, and build optimal signature schema for Stellar transactions.
- * @module @stellar-expert/tx-signers-inspector
- */

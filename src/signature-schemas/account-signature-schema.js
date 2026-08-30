@@ -1,5 +1,5 @@
-import SignatureRequirementsTypes from './requirements/signature-requirements-types'
-import SignatureSchema from './signature-schema'
+import SignatureRequirementsTypes from './requirements/signature-requirements-types.js'
+import SignatureSchema from './signature-schema.js'
 
 /**
  * Signature scheme analysis result with requirements for a given account.
@@ -39,7 +39,7 @@ export default class AccountSignatureSchema extends SignatureSchema {
                     res.push(requirements.key)
                     break
                 default:
-                    throw new Error('Unknow/unsupported signature requirements type')
+                    throw new Error('Unknown/unsupported signature requirements type')
             }
         }
         return res
@@ -84,13 +84,16 @@ export default class AccountSignatureSchema extends SignatureSchema {
      * @return {Number}
      */
     normalizeThreshold(threshold) {
+        const requested = threshold
         if (typeof threshold === 'string') {
-            threshold = this.requirements[0].thresholds[threshold.toLowerCase().split('_')[0]]
-            if (threshold === undefined)
-                throw new Error(`Invalid threshold level: "${threshold}".`)
+            const [account] = this.requirements
+            if (!account || !account.thresholds)
+                throw new Error('Account thresholds are unavailable. Mnemonic threshold levels cannot be resolved.')
+            //accept both "low" and "low_threshold" spellings
+            threshold = account.thresholds[threshold.toLowerCase().split('_')[0]]
         }
         if (typeof threshold !== 'number')
-            throw new Error(`Invalid threshold level: "${threshold}".`)
+            throw new Error(`Invalid threshold level: "${requested}".`)
         return threshold
     }
 }

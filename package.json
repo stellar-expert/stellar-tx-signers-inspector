@@ -1,17 +1,13 @@
 {
   "name": "@stellar-expert/tx-signers-inspector",
-  "version": "1.8.2",
-  "author": "OrbitLens<orbit@stellar.expert>",
+  "version": "2.0.0",
+  "author": "orbitlens <orbit@stellar.expert>",
   "description": "Discover required signers, weights, and build optimal signature schema for Stellar transactions.",
   "license": "MIT",
   "homepage": "https://github.com/stellar-expert/stellar-tx-signers-inspector",
   "scripts": {
-    "build": "webpack --mode=production --config ./webpack-config.js",
-    "test": "mocha",
-    "preversion": "npm test",
-    "version": "npm run build",
-    "postversion": "git push && git push --tags",
-    "prepare": "npm run build"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "prepublish": "rollup -c"
   },
   "bugs": {
     "url": "https://github.com/stellar-expert/stellar-tx-signers-inspector/issues",
@@ -21,8 +17,15 @@
     "type": "git",
     "url": "git+https://github.com/stellar-expert/stellar-tx-signers-inspector.git"
   },
-  "main": "./lib/stellar-tx-signers-inspector.js",
-  "module": "./src/index.js",
+  "type": "module",
+  "main": "lib/stellar-tx-signers-inspector.js",
+  "module": "src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    "types": "./src/index.d.ts",
+    "import": "./src/index.js",
+    "require": "./lib/stellar-tx-signers-inspector.js"
+  },
   "keywords": [
     "stellar",
     "signature",
@@ -30,23 +33,17 @@
     "multi-sig",
     "signer"
   ],
-  "engines": {
-    "node": ">=18"
-  },
   "peerDependencies": {
-    "@stellar/stellar-sdk": ">11"
+    "@stellar/stellar-sdk": ">=17"
   },
   "devDependencies": {
-    "@babel/core": "^7.19.0",
-    "@babel/preset-env": "^7.19.0",
-    "@babel/register": "^7.18.9",
-    "@stellar-expert/eslint-config-js": "^1.1.0",
-    "babel-loader": "^8.2.5",
-    "chai": "^4.2.0",
-    "mocha": "^7.2.0",
-    "sinon": "^9.2.1 ",
-    "terser-webpack-plugin": "^5.3.6",
-    "webpack": "^5.74.0",
-    "webpack-cli": "^4.10.0"
-  }
+    "@rollup/plugin-terser": "1.0.0",
+    "rollup": "4.63.1",
+    "jest": "30.4.2"
+  },
+  "files": [
+    "lib",
+    "src",
+    "!src/bundle.js"
+  ]
 }

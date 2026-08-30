@@ -1,9 +1,9 @@
-import {Horizon, StrKey, MuxedAccount} from '@stellar/stellar-sdk'
-import AccountThresholdsDescriptor from './account-thresholds-descriptor'
-import AccountSignatureSchema from './signature-schemas/account-signature-schema'
-import TransactionSignatureSchema from './signature-schemas/transaction-signature-schema'
-import AccountSignatureRequirements from './signature-schemas/requirements/account-signature-requirements'
-import ExtraSignatureRequirments from './signature-schemas/requirements/extra-signature-requirments'
+import {Horizon, NotFoundError, StrKey} from '@stellar/stellar-sdk'
+import AccountThresholdsDescriptor from './account-thresholds-descriptor.js'
+import AccountSignatureSchema from './signature-schemas/account-signature-schema.js'
+import TransactionSignatureSchema from './signature-schemas/transaction-signature-schema.js'
+import AccountSignatureRequirements from './signature-schemas/requirements/account-signature-requirements.js'
+import ExtraSignatureRequirements from './signature-schemas/requirements/extra-signature-requirements.js'
 
 const allThresholdLevels = ['low', 'med', 'high']
 
@@ -79,7 +79,7 @@ export default class SignersInspector {
         } else if (!StrKey.isValidEd25519PublicKey(source))
             throw new Error(`${source} is not a valid Stellar account public key.`)
         if (!threshold || !allThresholdLevels.includes(threshold))
-            throw new Error(`"${threshold}" is not a valid threshold. Expected one 'low', 'med' or'high'.`)
+            throw new Error(`"${threshold}" is not a valid threshold. Expected one of 'low', 'med' or 'high'.`)
         let container = this.sources[source]
         if (!container) {
             container = new AccountThresholdsDescriptor(source)
@@ -117,30 +117,28 @@ export default class SignersInspector {
                 delete accountInfo._baseAccount
                 res[source] = accountInfo
             } catch (err) {
-                //handle empty accounts
-                if (err.response && err.response.status === 404) {
-                    this.warnings.push({
-                        code: 'no_source',
-                        message: `Source account ${source} does not exist on the ledger.`,
-                        data: source
-                    })
-                    res[source] = {
-                        id: source,
-                        thresholds: {
-                            low_threshold: 0,
-                            med_threshold: 0,
-                            high_threshold: 0
-                        },
-                        signers: [{
-                            public_key: source,
-                            weight: 1,
-                            key: source,
-                            type: 'ed25519_public_key'
-                        }]
-                    }
-                    continue
+                //handle empty accounts - Horizon rejects missing accounts with NotFoundError
+                if (!(err instanceof NotFoundError))
+                    throw err
+                this.warnings.push({
+                    code: 'no_source',
+                    message: `Source account ${source} does not exist on the ledger.`,
+                    data: source
+                })
+                res[source] = {
+                    id: source,
+                    thresholds: {
+                        low_threshold: 0,
+                        med_threshold: 0,
+                        high_threshold: 0
+                    },
+                    signers: [{
+                        public_key: source,
+                        weight: 1,
+                        key: source,
+                        type: 'ed25519_public_key'
+                    }]
                 }
-                throw err
             }
         }
         this.accountsInfo = res
@@ -164,7 +162,7 @@ export default class SignersInspector {
             //discover potential signers
             const signatureRequirements = new AccountSignatureRequirements(id, minThreshold)
             //set account operation thresholds
-            const {low_threshold: low, med_threshold: med, high_threshold: high} = accountInfo.thresholds
+            const {low_threshold: low, med_threshold: med, high_threshold: high} = thresholds
             signatureRequirements.setThresholds({low, med, high})
             //detect min required threshold
             for (const {key, weight} of signers) {
@@ -186,7 +184,7 @@ export default class SignersInspector {
 
         if (this.extraSigners && this.extraSigners.constructor === Array && this.extraSigners.length > 0) {
             for (const extraSigner of this.extraSigners)
-                req.push(new ExtraSignatureRequirments(extraSigner))
+                req.push(new ExtraSignatureRequirements(extraSigner))
         }
 
         let schemaConstructor

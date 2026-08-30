@@ -1,5 +1,5 @@
-import SignatureRequirementsTypes from './requirements/signature-requirements-types'
-import SignatureSchema from './signature-schema'
+import SignatureRequirementsTypes from './requirements/signature-requirements-types.js'
+import SignatureSchema from './signature-schema.js'
 
 /**
  * Signature scheme analysis result with requirements for a given transactions.
@@ -37,7 +37,7 @@ export default class TransactionSignatureSchema extends SignatureSchema {
                     res.push(requirements.key)
                     break
                 default:
-                    throw new Error('Unknow/unsupported signature requirements type')
+                    throw new Error('Unknown/unsupported signature requirements type')
 
             }
         }
