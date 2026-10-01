@@ -1,4 +1,4 @@
-import SignatureRequirementsTypes from './requirements/signature-requirements-types.js'
+import {isPreAuthTxKey} from '../signer-keys.js'
 import SignatureSchema from './signature-schema.js'
 
 /**
@@ -6,42 +6,32 @@ import SignatureSchema from './signature-schema.js'
  */
 export default class TransactionSignatureSchema extends SignatureSchema {
     /**
+     * @param {Array<SignatureRequirementsBase>} requirements - The requirements tree that fully describes source accounts and weights.
+     * @param {Array<SchemaWarning>} warnings - Conditions that can't be fully checked in runtime.
+     * @param {Array<SorobanAuthSignatureSchema>} [sorobanAuth] - Signature schemas for Soroban authorization entries.
+     */
+    constructor({requirements, warnings, sorobanAuth = []}) {
+        super({requirements, warnings})
+        this.sorobanAuth = sorobanAuth
+        Object.freeze(this)
+    }
+
+    /**
+     * Signature schemas of Soroban authorization entries that require address credentials signatures.
+     * Empty if "sorobanAuth" inspection option is disabled.
+     * @type {Array<SorobanAuthSignatureSchema>}
+     * @readonly
+     */
+    sorobanAuth
+
+    /**
      * Discover optimal signers list based on preferred accounts.
      * @param {Array<string>} [availableSigners] - Optional constraint, a list of available signers to check (public keys).
      * @returns {Array<string>} - An optimal transaction signature scheme with respect to restricted availableSigners if provided.
      */
     discoverSigners(availableSigners) {
-        const res = []
-        for (const requirements of this.requirements) {
-            switch (requirements.type) {
-                case SignatureRequirementsTypes.ACCOUNT_SIGNATURE: {
-                    const {signers, minThreshold} = requirements
-                    let totalWeight = 0
-                    //find optimal signers
-                    for (const signer of signers) {
-                        if (!availableSigners || availableSigners.includes(signer.key)) {
-                            totalWeight += signer.weight
-                            if (!res.includes(signer.key)) {
-                                res.push(signer.key)
-                            }
-                            if (totalWeight >= minThreshold) break
-                        }
-                    }
-                    //if total weight is still lower than the threshold, it means that we can't find the schema
-                    if (totalWeight < minThreshold || totalWeight === 0) return []
-                }
-                    break
-                case SignatureRequirementsTypes.EXTRA_SIGNATURE:
-                    //if there is no extra signature signer, it means that we can't find the schema
-                    if (availableSigners && !availableSigners.includes(requirements.key)) return []
-                    res.push(requirements.key)
-                    break
-                default:
-                    throw new Error('Unknown/unsupported signature requirements type')
-
-            }
-        }
-        return res
+        const {feasible, signers} = this.resolveSigners(availableSigners)
+        return feasible ? signers : []
     }
 
     /**
@@ -50,7 +40,7 @@ export default class TransactionSignatureSchema extends SignatureSchema {
      * @returns {boolean} - True if the total weight of proposed signers is enough for to fully sign the transaction and false otherwise.
      */
     checkFeasibility(signers) {
-        return this.discoverSigners(signers).length > 0
+        return this.resolveSigners(signers).feasible
     }
 
     /**
@@ -65,19 +55,19 @@ export default class TransactionSignatureSchema extends SignatureSchema {
         const unneededSigners = []
         const uniqueSigners = []
         for (const proposedSigner of signers) {
-            if (uniqueSigners.includes(proposedSigner)) {
-                unneededSigners.push(proposedSigner)
-            } else {
+            if (!uniqueSigners.includes(proposedSigner)) {
                 uniqueSigners.push(proposedSigner)
+            } else if (!isPreAuthTxKey(proposedSigner)) {
+                unneededSigners.push(proposedSigner)
             }
         }
         //detect optimal signature schema giving the proposes signers
-        const optimalSigners = this.discoverSigners(uniqueSigners)
+        const {feasible, signers: optimalSigners} = this.resolveSigners(uniqueSigners)
         //verify that the proposed schema satisfies the requirements
-        if (!optimalSigners.length) return unneededSigners
-        //the transaction will fail if at least one extra signature is found
+        if (!feasible) return unneededSigners
+        //the transaction will fail if at least one extra signature is found (pre-auth hashes don't consume signatures)
         for (const proposedSigner of uniqueSigners) {
-            if (!optimalSigners.includes(proposedSigner)) {
+            if (!optimalSigners.includes(proposedSigner) && !isPreAuthTxKey(proposedSigner)) {
                 unneededSigners.push(proposedSigner)
             }
         }

@@ -1,3 +1,4 @@
+import {MAX_SIGNER_WEIGHT} from '../../signer-keys.js'
 import SignatureRequirementsBase from './signature-requirements-base.js'
 import SignatureRequirementsTypes from './signature-requirements-types.js'
 
@@ -5,7 +6,9 @@ import SignatureRequirementsTypes from './signature-requirements-types.js'
  * @typedef {Object} SignerDescriptor
  * @property {String} key - Signer id.
  * @property {Number} weight - Relative signer weight.
+ * @property {String} [type] - Signer key type ('ed25519_public_key', 'preauth_tx', 'sha256_hash', or 'ed25519_signed_payload').
  * @property {Boolean} [isMaster] - True if the signer is an account public key.
+ * @property {Boolean} [implicit] - True for a pre-authorized transaction signer matching the inspected transaction hash.
  */
 
 /**
@@ -15,12 +18,17 @@ export default class AccountSignatureRequirements extends SignatureRequirementsB
     /**
      * @param {String} id - Account id.
      * @param {Number} minThreshold - Minimum required threshold.
+     * @param {{path?: Array<Number>, maxSignatures?: Number}} [sorobanAuthNode] - Soroban authorization node properties.
      */
-    constructor(id, minThreshold) {
+    constructor(id, minThreshold, sorobanAuthNode) {
         super(SignatureRequirementsTypes.ACCOUNT_SIGNATURE)
         this.id = id
         this.minThreshold = minThreshold
         this.signers = []
+        if (sorobanAuthNode) {
+            this.path = sorobanAuthNode.path
+            this.maxSignatures = sorobanAuthNode.maxSignatures
+        }
     }
 
     /**
@@ -48,6 +56,18 @@ export default class AccountSignatureRequirements extends SignatureRequirementsB
     thresholds
 
     /**
+     * Position of the node in the Soroban delegated signers tree (Soroban authorization requirements only).
+     * @type {Array<Number>|undefined}
+     */
+    path
+
+    /**
+     * Maximum number of signatures accepted for the account (Soroban authorization requirements only).
+     * @type {Number|undefined}
+     */
+    maxSignatures
+
+    /**
      * Set account operation thresholds.
      * @param {{low: Number, med: Number, high: Number}} thresholds
      */
@@ -61,7 +81,7 @@ export default class AccountSignatureRequirements extends SignatureRequirementsB
      */
     addSigner(signer) {
         if (signer.weight > 0) {
-            this.signers.push(signer)
+            this.signers.push(signer.weight > MAX_SIGNER_WEIGHT ? {...signer, weight: MAX_SIGNER_WEIGHT} : signer)
         }
     }
 

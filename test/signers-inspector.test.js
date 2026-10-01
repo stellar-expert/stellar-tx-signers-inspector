@@ -1,5 +1,7 @@
-import {Keypair} from '@stellar/stellar-sdk'
+import {Keypair, Operation} from '@stellar/stellar-sdk'
 import SignersInspector from '../src/signers-inspector.js'
+import {buildTransaction} from './account-signer-test-utils.js'
+import FakeAccountInfo from './fake-account-info.js'
 
 const address = Keypair.random().publicKey()
 
@@ -27,10 +29,31 @@ describe('SignersInspector.detectOperationThreshold()', () => {
         expect(inspector.detectOperationThreshold({type: 'payment'})).toBe('med')
     })
 
+    test('maps inflation and Soroban footprint operations to low threshold', () => {
+        expect(inspector.detectOperationThreshold({type: 'inflation'})).toBe('low')
+        expect(inspector.detectOperationThreshold({type: 'extendFootprintTtl', extendTo: 100})).toBe('low')
+        expect(inspector.detectOperationThreshold({type: 'restoreFootprint'})).toBe('low')
+        expect(inspector.detectOperationThreshold({type: 'invokeHostFunction'})).toBe('med')
+    })
+
+    test('maps sponsorship operations to medium threshold', () => {
+        for (const type of ['beginSponsoringFutureReserves', 'endSponsoringFutureReserves', 'revokeAccountSponsorship', 'revokeSignerSponsorship'])
+            expect(inspector.detectOperationThreshold({type})).toBe('med')
+    })
+
     test('treats signer-altering setOptions as high threshold', () => {
         expect(inspector.detectOperationThreshold({type: 'setOptions', signer: {}})).toBe('high')
         expect(inspector.detectOperationThreshold({type: 'setOptions', masterWeight: 2})).toBe('high')
         expect(inspector.detectOperationThreshold({type: 'setOptions', homeDomain: 'x.com'})).toBe('med')
+    })
+
+    //Core checks field presence, not the value
+    test('treats zero master weight and thresholds as high threshold changes', () => {
+        const op = Operation.setOptions({masterWeight: 0})
+        const [parsed] = buildTransaction(FakeAccountInfo.basic(), [op]).operations
+        expect(inspector.detectOperationThreshold(parsed)).toBe('high')
+        expect(inspector.detectOperationThreshold({type: 'setOptions', lowThreshold: 0})).toBe('high')
+        expect(inspector.detectOperationThreshold({type: 'setOptions', highThreshold: 0})).toBe('high')
     })
 })
 

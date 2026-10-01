@@ -95,6 +95,93 @@ schema.checkAuthExtra(['GA7...K0M', 'GCF...DLP', 'GA0...MMR'])
 //returns ['GCF...DLP', 'GA0...MMR']
 ```
 
+#### Signer key types
+
+All four Stellar signer key types are accounted for, following Stellar Core signature
+verification rules:
+
+- **Ed25519 public keys** (`G...`) are regular signers.
+- **SHA-256 hash signers** (`X...`, `SIGNER_KEY_TYPE_HASH_X`) are regular signers as well: the
+  "signature" is the hash preimage, which occupies a transaction signature slot.
+- **Signed payload signers** (`P...`, `SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD`) are regular signers that
+  are different from the Ed25519 key they embed. A plain transaction signature by the embedded key
+  doesn't satisfy them.
+- **Pre-authorized transaction signers** (`T...`, `SIGNER_KEY_TYPE_PRE_AUTH_TX`) never produce
+  signatures. When a pre-auth signer matches the inspected transaction hash, its weight is counted
+  automatically. Pre-auth signers of other transactions are ignored.
+  - Pre-auth signers are never returned by `getAllPotentialSigners()`, `discoverSigners()`, or
+    `checkAuthExtra()`.
+  - A transaction fully authorized by a pre-auth signer needs no signatures, so `discoverSigners()`
+    returns `[]` while `checkFeasibility([])` returns `true`.
+  - A pre-auth `extraSigners` key can never match the hash of its own transaction. It makes the
+    schema unsatisfiable and is reported with an `unsatisfiable_extra_signer` warning.
+
+#### Soroban authorization entries
+
+Address credentials in Soroban authorization entries (`invokeHostFunction` operations) need
+signatures separate from the transaction envelope signatures. Entries with source account
+credentials are authorized by the operation source account signature and need nothing extra.
+
+Authorization entries are analyzed by default. Authorizing Stellar accounts are loaded from Horizon
+(or taken from `accountsInfo`):
+
+```js
+const schema = await inspectTransactionSigners(tx)
+//transaction envelope signers
+schema.discoverSigners()
+//one schema per authorization entry with address credentials
+for (const auth of schema.sorobanAuth) {
+    auth.address             //top-level credentials address, 'G...' or 'C...'
+    auth.credentialsType     //'address', 'address_v2' (CAP-71-02), or 'address_with_delegates' (CAP-71-01)
+    auth.requirements        //one node per address that needs to authenticate
+    auth.discoverSigners()   //public keys that need to sign the entry payload
+    auth.checkFeasibility(['GA7...K0M'])
+    auth.getSignaturePayload() //32-byte payload signed by every node of the entry
+    auth.verifySignatures()  //validate the signatures already attached to the entry
+}
+```
+
+To skip the analysis, set `sorobanAuth: false`. In this case `schema.sorobanAuth` is empty, and every
+entry that needs a separate signature is reported with a `soroban_auth` warning instead.
+
+The signature scheme discovery follows Soroban host authentication rules:
+
+- **Stellar accounts** authenticate with the **medium** threshold. Only Ed25519 signers (the master
+  key and `ed25519_public_key` signers) count; pre-auth, hash-x and signed payload signers can't sign
+  Soroban payloads.
+- **Custom accounts** (contracts) authenticate in their `__check_auth` function, which can't be
+  evaluated offline. They are reported with a `custom_account_auth` warning and treated as
+  satisfiable. `verifySignatures()` returns `valid: null` for them.
+- **Delegated signers** (CAP-71-01, `SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES`) of custom accounts
+  are analyzed recursively. Each node's `path` gives its position in the delegates tree (`[]` for the
+  top-level address). All delegates sign the same address-bound payload of the top-level address.
+  Delegates attached to a Stellar account are ignored by the host and reported with an
+  `ignored_soroban_delegates` warning.
+- **Payloads.** Legacy `address` credentials sign the `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION` preimage.
+  `address_v2` (CAP-71-02) and `address_with_delegates` credentials sign the address-bound
+  `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS` preimage.
+
+`verifySignatures()` returns one result per node,
+`{id, path, signed, valid, signers, weight, errors}`. It checks the attached Ed25519 signatures
+against the payload, signature ordering and count, signer weights, the medium threshold, and
+delegates ordering.
+
+Authorization entries are part of the transaction body. They need to be signed before signing the transaction
+envelope.
+
+#### Sponsorship
+
+Sponsorship operations don't require signers beyond their operation sources. However, a sponsored
+account created within the same transaction must sign it with its master key, because it's the
+source of the `endSponsoringFutureReserves` operation. No `no_source` warning is reported for
+accounts created by the transaction before their first use.
+
+Mismatched sponsorship "sandwiches" make the transaction fail and are reported with these warnings:
+
+- `invalid_sponsorship`: self, repeated, or recursive sponsorship.
+- `orphan_sponsorship_end`: an end operation without an active sponsorship.
+- `unterminated_sponsorship`: a sponsorship that is never ended.
+
 ### Analyze account signers
 
 Accounts signing requirements can be analyzed similar to transactions.
@@ -217,6 +304,19 @@ schema.warnings
 //   data: 'GAU...DOE'
 //}]
 ```
+
+| Code                         | Schema          | Description                                                               |
+|------------------------------|-----------------|---------------------------------------------------------------------------|
+| `no_source`                  | tx, account     | Source account doesn't exist and isn't created by the tx before use       |
+| `unsatisfiable_extra_signer` | tx              | Pre-auth `extraSigners` key can never match the transaction hash          |
+| `invalid_sponsorship`        | tx              | Self, repeated, or recursive `beginSponsoringFutureReserves`              |
+| `orphan_sponsorship_end`     | tx              | `endSponsoringFutureReserves` without an active sponsorship               |
+| `unterminated_sponsorship`   | tx              | `beginSponsoringFutureReserves` that is never ended                       |
+| `soroban_auth`               | tx              | Soroban auth entry needs a separate signature (`sorobanAuth` option off)  |
+| `custom_account_auth`        | Soroban auth    | Authentication is defined by a custom account contract                    |
+| `ignored_soroban_delegates`  | Soroban auth    | Delegated signers attached to a Stellar account are ignored               |
+| `no_auth_account`            | Soroban auth    | Authorizing Stellar account doesn't exist on the ledger                   |
+| `unsupported_auth_address`   | Soroban auth    | Address type can't be used in Soroban credentials                         |
 
 ## Building
 

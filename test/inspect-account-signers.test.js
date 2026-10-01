@@ -1,3 +1,4 @@
+import {Keypair, StrKey, hash} from '@stellar/stellar-sdk'
 import {inspectAccountSigners} from '../src/index.js'
 import {fakeHorizon, expectSameMembers} from './account-signer-test-utils.js'
 import FakeAccountInfo from './fake-account-info.js'
@@ -64,6 +65,24 @@ describe('inspectAccountSigners()', () => {
         expect(schema.checkAuthExtra('high', [signerD.id, signerC.id, signerB.id])).toEqual([])
         expect(schema.checkAuthExtra(6, [signerA.id, signerD.id])).toEqual([]) //not enough weight
         expect(schema.checkAuthExtra('high', [signerA.id, signerD.id, signerC.id])).toEqual([signerD.id])
+    })
+
+    test('counts pre-auth signers only when explicitly listed as available', async () => {
+        const preAuthKey = StrKey.encodePreAuthTx(hash(Keypair.random().rawPublicKey()))
+        const src = FakeAccountInfo.basic()
+            .withThresholds(1, 2, 2)
+            .withSigner(preAuthKey, 1)
+
+        const schema = await inspectAccountSigners(src.id)
+
+        expect(schema.requirements[0].signers.map(s => s.type)).toEqual(['ed25519_public_key', 'preauth_tx'])
+        //pre-auth hashes never produce signatures
+        expectSameMembers(schema.getAllPotentialSigners(), [src.id])
+        expect(schema.discoverSigners('med')).toEqual([])
+        expect(schema.discoverSigners('med', [src.id, preAuthKey])).toEqual([src.id])
+        expect(schema.checkFeasibility('low', [preAuthKey])).toBe(true)
+        expect(schema.discoverSigners('low', [preAuthKey])).toEqual([])
+        expect(schema.checkAuthExtra('low', [preAuthKey, src.id])).toEqual([src.id])
     })
 
     test('rejects an empty source account address', async () => {

@@ -1,7 +1,10 @@
+import {StrKey} from '@stellar/stellar-sdk'
 import SignatureRequirementsBase from '../src/signature-schemas/requirements/signature-requirements-base.js'
 import SignatureRequirementsTypes from '../src/signature-schemas/requirements/signature-requirements-types.js'
 import AccountSignatureRequirements from '../src/signature-schemas/requirements/account-signature-requirements.js'
 import ExtraSignatureRequirements from '../src/signature-schemas/requirements/extra-signature-requirements.js'
+import ContractSignatureRequirements from '../src/signature-schemas/requirements/contract-signature-requirements.js'
+import {getSignerKeyType} from '../src/signer-keys.js'
 
 describe('SignatureRequirementsBase', () => {
     test('accepts every supported requirements type', () => {
@@ -41,6 +44,18 @@ describe('AccountSignatureRequirements', () => {
         byWeight.sortSigners()
         expect(byWeight.signers.map(s => s.key)).toEqual([cosigner, master])
     })
+
+    test('clamps signer weights to uint8', () => {
+        const req = new AccountSignatureRequirements(master, 2)
+        req.addSigner({key: cosigner, weight: 300})
+        expect(req.signers).toEqual([{key: cosigner, weight: 255}])
+    })
+
+    test('carries Soroban authorization node properties', () => {
+        const req = new AccountSignatureRequirements(master, 2, {path: [1, 0], maxSignatures: 20})
+        expect(req.path).toEqual([1, 0])
+        expect(req.maxSignatures).toBe(20)
+    })
 })
 
 describe('ExtraSignatureRequirements', () => {
@@ -48,5 +63,27 @@ describe('ExtraSignatureRequirements', () => {
         const req = new ExtraSignatureRequirements('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ')
         expect(req.type).toBe(SignatureRequirementsTypes.EXTRA_SIGNATURE)
         expect(req.key).toBe('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ')
+        expect(req.signerType).toBe('ed25519_public_key')
+    })
+})
+
+describe('ContractSignatureRequirements', () => {
+    test('carries the contract address and node path', () => {
+        const contract = StrKey.encodeContract(new Uint8Array(32))
+        const req = new ContractSignatureRequirements(contract, [0])
+        expect(req.type).toBe(SignatureRequirementsTypes.CONTRACT_SIGNATURE)
+        expect(req.id).toBe(contract)
+        expect(req.path).toEqual([0])
+    })
+})
+
+describe('getSignerKeyType()', () => {
+    test('detects signer key types by StrKey prefix', () => {
+        const raw = new Uint8Array(32)
+        expect(getSignerKeyType(StrKey.encodeEd25519PublicKey(raw))).toBe('ed25519_public_key')
+        expect(getSignerKeyType(StrKey.encodePreAuthTx(raw))).toBe('preauth_tx')
+        expect(getSignerKeyType(StrKey.encodeSha256Hash(raw))).toBe('sha256_hash')
+        expect(getSignerKeyType(StrKey.encodeContract(raw))).toBe(null)
+        expect(getSignerKeyType(undefined)).toBe(null)
     })
 })

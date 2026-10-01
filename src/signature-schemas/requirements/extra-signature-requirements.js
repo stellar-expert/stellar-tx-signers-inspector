@@ -1,3 +1,4 @@
+import {getSignerKeyType} from '../../signer-keys.js'
 import SignatureRequirementsBase from './signature-requirements-base.js'
 import SignatureRequirementsTypes from './signature-requirements-types.js'
 
@@ -11,6 +12,7 @@ export default class ExtraSignatureRequirements extends SignatureRequirementsBas
     constructor(key) {
         super(SignatureRequirementsTypes.EXTRA_SIGNATURE)
         this.key = key
+        this.signerType = getSignerKeyType(key)
     }
 
     /**
@@ -19,4 +21,11 @@ export default class ExtraSignatureRequirements extends SignatureRequirementsBas
      * @readonly
      */
     key
+
+    /**
+     * Signer key type ('ed25519_public_key', 'preauth_tx', 'sha256_hash', or 'ed25519_signed_payload').
+     * @type {String|null}
+     * @readonly
+     */
+    signerType
 }

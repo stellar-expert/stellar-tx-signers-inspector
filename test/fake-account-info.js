@@ -1,4 +1,5 @@
 import {Keypair} from '@stellar/stellar-sdk'
+import {getSignerKeyType} from '../src/signer-keys.js'
 import {fakeHorizon} from './account-signer-test-utils.js'
 
 /**
@@ -45,16 +46,16 @@ export default class FakeAccountInfo {
 
     /**
      * Add specific signer to the list of signers.
-     * @param {string|FakeAccountInfo} key - Signer id (public key, hash, or tx hash)
+     * @param {string|FakeAccountInfo} key - Signer id (public key, hash, tx hash, or signed payload)
      * @param {number} weight - Signer weight.
+     * @param {'ed25519_public_key'|'sha256_hash'|'preauth_tx'|'ed25519_signed_payload'} [type] - Signer type, derived from the key by default.
      * @return {FakeAccountInfo}
      */
-    withSigner(key, weight) {
+    withSigner(key, weight, type) {
         if (key.id) {
             key = key.id
         }
-        //{'ed25519_public_key'|'sha256_hash'|'preauth_tx'} type - Signer type.
-        this.signers.push({type: 'ed25519_public_key', key, weight})
+        this.signers.push({type: type || getSignerKeyType(key), key, weight})
         return this
     }
 
